@@ -1,4 +1,5 @@
 from typing import Any
+from Zones import Start_zone, End_zone
 
 
 class Errors(Exception):
@@ -25,7 +26,32 @@ def zone_name(zone_list: list, error: list) -> int:
 			if zone.find("/") or zone.find(" "):
 				raise Errors
 		return 1
-	except:
+	except Errors:
 		error.append(f"{zone} contains invalid char")
 		return 0
 
+def start_zone_num(zone_list: list, error: list):
+	try:
+		i = 0
+		for zone in zone_list:
+			if isinstance(zone, Start_zone):
+				i += 1
+		if i > 1:
+			raise Errors
+		else:
+			return 1
+	except Errors:
+		error.append("Too many Start Zones")
+
+def end_zone_num(zone_list: list, error: list):
+	try:
+		i = 0
+		for zone in zone_list:
+			if isinstance(zone, End_zone):
+				i += 1
+		if i > 1:
+			raise Errors
+		else:
+			return 1
+	except Errors:
+		error.append("Too many End Zones")
