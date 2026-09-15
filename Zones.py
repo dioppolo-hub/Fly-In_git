@@ -21,8 +21,8 @@ class Zone():
 		if bidirectional:
 			other_zone.neighbours.discard(self)
 
-	def get_zone_pos(self):
-		return(self.x, self.y)
+	def get_zone_pos(self) -> tuple:
+		return (self.x, self.y)
 
 
 class Start_zone(Zone):
