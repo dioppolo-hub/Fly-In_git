@@ -25,10 +25,10 @@ class GridMap:
 			return False
 
 	def get_zone(self, x: int, y: int):
-		return self.zone.get((x, y))
+		return self.zones.get((x, y))
 
 	def remove_zone(self, x: int, y: int):
-		return self.zone.pop((x, y), None)
+		return self.zones.pop((x, y), None)
 
 	def get_neighbours(self, zone: Zone, allow_diagonals=False):
 		directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
