@@ -8,10 +8,8 @@ class GridMap:
 		self.height = height
 		self.zones = {}
 
-
 	def add_zone(self, zone: Zone):
 		self.zones[(zone.x, zone.y)] = zone
-
 
 	def get_neighbours(self, zone: Zone, allow_diagonals=False):
 		directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
