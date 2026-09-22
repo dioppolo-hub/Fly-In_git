@@ -68,11 +68,12 @@ class Connection():
 		self.active_drones.append(drone)
 		return drone
 
-	def is_blocked(self) -> bool:
-		if self.zone_a.is_blocked or self.zone_b.is_blocked:
+	def is_blocked(self, zone) -> bool:
+		next_zone = self.get_other_zone(zone)
+		if next_zone.is_blocked:
 			return True
 		else:
 			return False
 
-	def get_active_drones(self) -> int:
+	def get_active_drones_conn(self) -> int:
 		return len(self.active_drones)

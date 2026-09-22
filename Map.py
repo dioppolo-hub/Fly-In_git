@@ -1,5 +1,4 @@
-from typing import Any
-from Zones import Zone
+from Zones import Zone, Start_zone, End_zone
 
 
 class GridMap:
@@ -19,9 +18,10 @@ class GridMap:
 
 	def is_inside(self, position: tuple):
 		x, y = position
-		if 0 <= x < self.width and 0 <= y < self.height:
+		if 0 <= x <= self.width and 0 <= y <= self.height:
 			return True
 		else:
+			print("This Zone is outside the Map limit")
 			return False
 
 	def get_zone(self, x: int, y: int):
@@ -40,6 +40,17 @@ class GridMap:
 			if neighbour is not None and not neighbour.is_blocked:
 				neighbours.append(neighbour)
 		return neighbours
+
+	def get_start_zone(self) -> Zone:
+		for zone in self.zones:
+			if isinstance(zone, Start_zone):
+				return zone
+
+	def get_end_zone(self) -> Zone:
+		for zone in self.zones:
+			if isinstance(zone, End_zone):
+				return zone
+
 
 	def get_all_zones(self) -> list:
 		return list(self.zones.values())

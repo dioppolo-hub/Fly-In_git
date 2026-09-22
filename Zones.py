@@ -12,6 +12,9 @@ class Zone():
 		self.neighbours = set()
 		self.drones = []
 
+	def get_zone_name(self) -> str:
+		return self.name
+
 	def is_zone_full(self) -> bool:
 		if len(self.drones) >= self.capacity:
 			return True
@@ -60,11 +63,17 @@ class Zone():
 		else:
 			return False
 
+	def get_active_drones_zone(self):
+		return len(self.drones)
+
 	def get_neighbours(self) -> set:
 		return self.neighbours.copy()
 
 	def get_zone_pos(self) -> tuple:
 		return (self.x, self.y)
+
+	def get_drones(self):
+		return self.drones
 
 
 class Start_zone(Zone):
