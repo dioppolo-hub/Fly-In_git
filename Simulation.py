@@ -2,7 +2,7 @@ from Zones import Zone, Blocked_zone, Restricted_zone, Priority_zone, Start_zone
 from Drones import Drone
 from Map import GridMap
 from Algorithm import A_Star
-from Scheduler import assign_path_drone
+from Scheduler import assign_path_drone, move_one_turn
 
 
 def test():
@@ -23,8 +23,11 @@ def test():
 	zone2.connect_zones(end_base)
 	start_base.enter_zone(d1)
 	start_base.enter_zone(d2)
-	assign_path_drone(easy_linear_map)
-	
+	drones = assign_path_drone(easy_linear_map)
+	while any(drone.path for drone in drones):
+		move_one_turn(easy_linear_map, drones)
+		for drone in drones:
+			print(drone.name, drone.get_drone_pos(), drone.status)
 
 
 test()
