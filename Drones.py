@@ -2,8 +2,9 @@ from typing import Any
 
 
 class Drone():
-	def __init__(self,  drone_id: str, x: int, y: int):
-		self.drone_id = drone_id
+	def __init__(self,  name: str, x: int, y: int):
+		self.name = name
+		self.drone_id = 1
 		self.x = x
 		self.y = y
 		self.status = "idle"

@@ -42,12 +42,12 @@ class GridMap:
 		return neighbours
 
 	def get_start_zone(self) -> Zone:
-		for zone in self.zones:
+		for zone in self.zones.values():
 			if isinstance(zone, Start_zone):
 				return zone
 
 	def get_end_zone(self) -> Zone:
-		for zone in self.zones:
+		for zone in self.zones.values():
 			if isinstance(zone, End_zone):
 				return zone
 

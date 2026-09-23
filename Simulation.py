@@ -1,15 +1,18 @@
 from Zones import Zone, Blocked_zone, Restricted_zone, Priority_zone, Start_zone, End_zone
 from Drones import Drone
 from Map import GridMap
-from Algorithm import Algoritm
+from Algorithm import A_Star
+from Scheduler import assign_path_drone
 
 
 def test():
 	easy_linear_map = GridMap(3, 0)
 
 	start_base = Start_zone(0, 0, "Start")
-	D1 = Drone("D1", 0, 0)
-	D2 = Drone("D2", 0, 0)
+	d1 = Drone("D1", 0, 0)
+	d2 = Drone("D2", 0, 0)
+	print(d1.drone_id)
+	print(d2.drone_id)
 	zone1 = Zone(1, 0, "Waypoint1")
 	zone2 = Zone(2, 0, "Waypoint2")
 	end_base = End_zone(3, 0, "Goal")
@@ -20,9 +23,9 @@ def test():
 	start_base.connect_zones(zone1)
 	zone1.connect_zones(zone2)
 	zone2.connect_zones(end_base)
-	start_base.enter_zone(D1)
-	start_base.enter_zone(D2)
-	Algoritm(easy_linear_map)
+	start_base.enter_zone(d1)
+	start_base.enter_zone(d2)
+	assign_path_drone(easy_linear_map)
 	
 
 
