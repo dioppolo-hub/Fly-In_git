@@ -2,9 +2,11 @@ from Zones import Zone, Start_zone, End_zone
 
 
 class GridMap:
-	def __init__(self, width: int, height: int):
-		self.width = width
-		self.height = height
+	def __init__(self, min_x: int, max_x: int, min_y: int, max_y: int):
+		self.min_x = min_x
+		self.max_x = max_x
+		self.min_y = min_y
+		self.max_y = max_y
 		self.zones = {}
 
 	def add_zone(self, zone: Zone):
@@ -18,7 +20,7 @@ class GridMap:
 
 	def is_inside(self, position: tuple):
 		x, y = position
-		if 0 <= x <= self.width and 0 <= y <= self.height:
+		if self.min_y <= x <= self.max_x and self.min_y <= y <= self.max_y:
 			return True
 		else:
 			print("This Zone is outside the Map limit")

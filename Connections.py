@@ -19,6 +19,8 @@ class Connection():
 		self.bidirectional = True
 		self.waiting_drones = []
 		self.active_drones = []
+		zone_a.add_connection(self)
+		zone_b.add_connection(self)
 
 	def get_conn_pos(self) -> tuple:
 		return (self.x, self.y)
@@ -37,10 +39,7 @@ class Connection():
 			return False
 
 	def can_enter_conn(self, drone) -> bool:
-		if self.is_conn_full() or drone not in self.active_drones:
-			return True
-		else:
-			return False
+		return not self.is_conn_full() and drone not in self.active_drones
 
 	def enter_conn(self, drone) -> bool:
 		if not self.can_enter_conn(drone):

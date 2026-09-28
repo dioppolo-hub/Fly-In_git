@@ -2,18 +2,35 @@ from typing import Any
 
 
 class Zone():
-	def __init__(self, x: int, y: int, name: str):
+	def __init__(self, x: int, y: int, name: str, capacity: int):
 		self.name = name
-		self.capacity = 1
+		self.capacity = capacity
 		self.x, self.y = x, y
 		self.priority = 0
 		self.cost = 1
 		self.is_blocked = False
 		self.neighbours = set()
 		self.drones = []
+		self.connections = {}
 
 	def get_zone_name(self) -> str:
 		return self.name
+
+	def add_connection(self, connection) -> bool:
+		if connection.zone_a is self:
+			other_zone = connection.zone_b
+		elif connection.zone_b is self:
+			other_zone = connection.zone_a
+		else:
+			return False
+		self.connections[other_zone] = connection
+		return True
+
+	def get_available_conn(self, next_zone, drone) -> Any:
+		connection = self.connections.get(next_zone)
+		if connection is None or not connection.can_enter_conn(drone):
+			return None
+		return connection
 
 	def is_zone_full(self) -> bool:
 		if len(self.drones) >= self.capacity:
@@ -48,7 +65,7 @@ class Zone():
 		if bidirectional:
 			other_zone.neighbours.add(self)
 		return True
-	
+
 	def disconnect_zones(self, other_zone, bidirectional=True) -> bool:
 		if other_zone == self:
 			return False
@@ -77,30 +94,28 @@ class Zone():
 
 
 class Start_zone(Zone):
-	def __init__(self, x: int, y: int, name: str):
-		super().__init__(x, y, name)
-		self.capacity = 25
+	def __init__(self, x: int, y: int, name: str, capacity: int):
+		super().__init__(x, y, name, capacity)
 
 
 class End_zone(Zone):
-	def __init__(self, x: int, y: int, name: str):
-		super().__init__(x, y, name)
-		self.capacity = 25
+	def __init__(self, x: int, y: int, name: str, capacity: int):
+		super().__init__(x, y, name, capacity)
 
 
 class Restricted_zone(Zone):
-	def __init__(self, x: int, y: int, name: str):
-		super().__init__(x, y, name)
+	def __init__(self, x: int, y: int, name: str, capacity: int):
+		super().__init__(x, y, name, capacity)
 		self.cost = 2
 
 
 class Priority_zone(Zone):
-	def __init__(self, x: int, y: int, name: str):
-		super().__init__(x, y, name)
+	def __init__(self, x: int, y: int, name: str, capacity: int):
+		super().__init__(x, y, name, capacity)
 		self.priority = 1
 
 
 class Blocked_zone(Zone):
-	def __init__(self, x: int, y: int, name: str):
-		super().__init__(x, y, name)
+	def __init__(self, x: int, y: int, name: str, capacity: int):
+		super().__init__(x, y, name, capacity)
 		self.is_blocked = True

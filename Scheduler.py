@@ -6,7 +6,7 @@
 #    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/09/23 13:52:39 by dioppolo          #+#    #+#              #
-#    Updated: 2026/09/23 16:15:58 by dioppolo         ###   ########.fr        #
+#    Updated: 2026/09/28 13:36:05 by dioppolo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,32 +27,49 @@ def assign_path_drone(map: GridMap) -> list:
 	return drones
 
 def move_one_turn(map: GridMap, drones: list[Drone]) -> None:
-	planned_moves = []
-	reserved_zones = set()
+	zones = map.get_all_zones()
+	zone_by_drone = {}
+	for zone in zones:
+		for drone in zone.drones:
+			zone_by_drone[drone] = zone
+	candidates = []
 	for drone in drones:
 		if not drone.path:
 			continue
-		current_zone = None
-		for zone in map.get_all_zones():
-			if drone in zone.drones:
-				current_zone = zone
-				break
-		if current_zone is None:
+		curr_zone = zone_by_drone.get(drone)
+		if curr_zone is None:
 			continue
 		next_zone = drone.path[0]
-		if next_zone in reserved_zones:
-			continue
 		if next_zone.is_blocked:
+			print("\nGestire zone bloccate\n")
 			continue
-		if next_zone.is_zone_full():
-			continue
-		reserved_zones.add(next_zone)
-		planned_moves.append((drone, current_zone, next_zone))
-	for drone, current_zone, next_zone in planned_moves:
-		current_zone.leave_zone(drone)
+		candidates.append((drone, curr_zone, next_zone))
+	accepted = [True] * len(candidates)
+	while True:
+		changed = False
+		for zone in zones:
+			incoming = [
+				index for index, (_, _, destination) in enumerate(candidates)
+				if accepted[index] and destination is zone
+			]
+			outgoing = sum(
+				1 for index, (_, source, _) in enumerate(candidates)
+				if accepted[index] and source is zone
+			)
+			overflow = len(zone.drones) + len(incoming) - outgoing - zone.capacity
+			if overflow > 0:
+				for index in reversed(incoming[-overflow:]):
+					accepted[index] = False
+					changed = True
+		if not changed:
+			break
+	selected_moves = [
+		candidate for index, candidate in enumerate(candidates)
+		if accepted[index]
+	]
+	for drone, curr_zone, _ in selected_moves:
+		curr_zone.leave_zone(drone)
+	for drone, _, next_zone in selected_moves:
 		next_zone.enter_zone(drone)
 		drone.path.pop(0)
-		if not drone.path:
-			drone.status = "idle"
-		else:
-			drone.status = "moving"
+		drone.status = "moving" if drone.path else "idle"
