@@ -71,9 +71,7 @@ def simple_fork():
 		if drones and not movement:
 			print("[ERRORE] - Simulazione Bloccata")
 			exit(0)
-"""
-print("==== MAP1 - Easy ====")
-easy_linear_map()"""
+
 print("==== MAP2 - Easy ====")
 simple_fork()
 

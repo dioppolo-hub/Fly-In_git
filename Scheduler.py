@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Scheduler.py                                       :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
+#    By: diego <diego@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/09/23 13:52:39 by dioppolo          #+#    #+#              #
-#    Updated: 2026/09/29 11:09:00 by dioppolo         ###   ########.fr        #
+#    Updated: 2026/09/29 15:12:47 by diego            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -48,48 +48,55 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 			print("\nGestire zone bloccate\n")
 			continue
 		candidates.append((drone, curr_zone, next_zone))
-	accepted = [True] * len(candidates)
-	"""Calcolo delle mosse possibili affiancate da una lista che
-	determina se le mosse si possono fare"""
+	avoided_by_drone = {drone: set() for drone, _, _ in candidates}
+	blocked = set()
 	while True:
-		changed = False
-		for zone in zones:
-			"""Conta le mosse in cui i droni vogliono entrare in una zona"""
-			incoming = [
-				index for index, (_, _, destination) in enumerate(candidates)
-				if accepted[index] and destination is zone
-			]
-			"""Conta le mosse in cui i droni voglio uscire"""
-			outgoing = sum(
-				1 for index, (_, source, _) in enumerate(candidates)
-				if accepted[index] and source is zone
-			)
-			"""Conta quanti droni resterebbero oltre la capacita'
-			Se overflow e' minore di 0 significa che la capacita'
-			e' rispettata, se e' positivo ci sono troppi arrivi"""
-			overflow = len(zone.drones) + len(incoming) - outgoing - zone.capacity
-			if overflow > 0:
-				for index in reversed(incoming[-overflow:]):
-					accepted[index] = False
-					changed = True
-		if not changed:
+		accepted = [index not in blocked for index in range(len(candidates))]
+		while True:
+			changed = False
+			for zone in zones:
+				"""Conta le mosse in cui i droni vogliono entrare in una zona"""
+				incoming = [
+					index for index, (_, _, destination) in enumerate(candidates)
+					if accepted[index] and destination is zone
+				]
+				"""Conta le mosse in cui i droni voglio uscire"""
+				outgoing = sum(
+					1 for index, (_, source, _) in enumerate(candidates)
+					if accepted[index] and source is zone
+				)
+				"""Conta quanti droni resterebbero oltre la capacita'
+				Se overflow e' minore di 0 significa che la capacita'
+				e' rispettata, se e' positivo ci sono troppi arrivi"""
+				overflow = len(zone.drones) + len(incoming) - outgoing - zone.capacity
+				if overflow > 0:
+					for index in reversed(incoming[-overflow:]):
+						accepted[index] = False
+						changed = True
+			if not changed:
+				break
+		rejected = [
+			index for index, is_accepted in enumerate(accepted)
+			if not is_accepted and index not in blocked
+		]
+		if not rejected:
 			break
-	"""Ricalcolo del path in caso di strada chiusa"""
-	end_zone = map.get_end_zone()
-	avoided_zones = {
-		dest for index, (_, _, dest) in enumerate(candidates)
-		if not accepted[index]
-	}
-	for index, (drone, curr_zone, _) in enumerate(candidates):
-		if accepted[index]:
+		rerouted = False
+		for index in rejected:
+			drone, curr_zone, rejected_zone = candidates[index]
+			avoided_by_drone[drone].add(rejected_zone)
+			new_path = A_Star(map, curr_zone, map.get_end_zone(), avoided_by_drone[drone])
+			if len(new_path) > 1:
+				drone.path = new_path[1:]
+				candidates[index] = (drone, curr_zone, new_path[1])
+				rerouted = True
+		if rerouted:
 			continue
-		new_path = A_Star(map, curr_zone, end_zone, avoided_zones)
-		if new_path:
-			drone.path = new_path[1:]
-	"""Spostamento dei droni"""
+		blocked.update(rejected)
 	selected_moves = [
-		candidate for index, candidate in enumerate(candidates)
-		if accepted[index]
+		candidates[index]
+		for index, is_accepted in enumerate(accepted)
+		if is_accepted
 	]
 	for drone, curr_zone, _ in selected_moves:
 		curr_zone.leave_zone(drone)
@@ -97,6 +104,7 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 		next_zone.enter_zone(drone)
 		drone.path.pop(0)
 		drone.status = "moving" if drone.path else "idle"
-	return [f"D{drone.drone_id}-{next_zone.name}"
-			for drone, _, next_zone in selected_moves
-		]
+	return [
+		f"D{drone.drone_id}-{next_zone.name}"
+		for drone, _, next_zone in selected_moves
+	]
