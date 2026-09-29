@@ -6,7 +6,7 @@
 #    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/09/23 13:52:39 by dioppolo          #+#    #+#              #
-#    Updated: 2026/09/29 10:33:25 by dioppolo         ###   ########.fr        #
+#    Updated: 2026/09/29 11:09:00 by dioppolo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -49,17 +49,24 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 			continue
 		candidates.append((drone, curr_zone, next_zone))
 	accepted = [True] * len(candidates)
+	"""Calcolo delle mosse possibili affiancate da una lista che
+	determina se le mosse si possono fare"""
 	while True:
 		changed = False
 		for zone in zones:
+			"""Conta le mosse in cui i droni vogliono entrare in una zona"""
 			incoming = [
 				index for index, (_, _, destination) in enumerate(candidates)
 				if accepted[index] and destination is zone
 			]
+			"""Conta le mosse in cui i droni voglio uscire"""
 			outgoing = sum(
 				1 for index, (_, source, _) in enumerate(candidates)
 				if accepted[index] and source is zone
 			)
+			"""Conta quanti droni resterebbero oltre la capacita'
+			Se overflow e' minore di 0 significa che la capacita'
+			e' rispettata, se e' positivo ci sono troppi arrivi"""
 			overflow = len(zone.drones) + len(incoming) - outgoing - zone.capacity
 			if overflow > 0:
 				for index in reversed(incoming[-overflow:]):
@@ -67,6 +74,7 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 					changed = True
 		if not changed:
 			break
+	"""Ricalcolo del path in caso di strada chiusa"""
 	end_zone = map.get_end_zone()
 	avoided_zones = {
 		dest for index, (_, _, dest) in enumerate(candidates)
@@ -78,6 +86,7 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 		new_path = A_Star(map, curr_zone, end_zone, avoided_zones)
 		if new_path:
 			drone.path = new_path[1:]
+	"""Spostamento dei droni"""
 	selected_moves = [
 		candidate for index, candidate in enumerate(candidates)
 		if accepted[index]
