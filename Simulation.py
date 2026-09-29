@@ -3,17 +3,16 @@ from Drones import Drone
 from Map import GridMap
 from Algorithm import A_Star
 from Scheduler import assign_path_drone, move_one_turn
-from Visual_Rep import print_movement
 
 
 def easy_linear_map():
-	easy_linear_map = GridMap(3, 0)
+	easy_linear_map = GridMap(min_x=0, max_x=3, min_y=0, max_y=0)
 	start_base = Start_zone(0, 0, "Start", 2)
 	d1 = Drone("D1", 1)
 	d2 = Drone("D2", 2)
 	zone1 = Zone(1, 0, "Waypoint1", 1)
 	zone2 = Zone(2, 0, "Waypoint2", 1)
-	end_base = End_zone(3, 0, "Goal")
+	end_base = End_zone(3, 0, "Goal", 2)
 	easy_linear_map.add_zone(start_base)
 	easy_linear_map.add_zone(zone1)
 	easy_linear_map.add_zone(zone2)
@@ -24,9 +23,16 @@ def easy_linear_map():
 	start_base.enter_zone(d1)
 	start_base.enter_zone(d2)
 	drones = assign_path_drone(easy_linear_map)
-	while any(drone.path for drone in drones):
-		move_one_turn(easy_linear_map, drones)
-		print_movement(easy_linear_map, drones)
+	turn = 0
+	while drones:
+		turn += 1
+		print(f"\n=====(turn: {turn})=====")
+		movement = move_one_turn(easy_linear_map, drones)
+		print(" ".join(movement))
+		drones = [drone for drone in drones if drone not in end_base.drones]
+		if drones and not movement:
+			print("[ERRORE] - Simulazione Bloccata")
+			exit(0)
 
 
 def simple_fork():
@@ -55,9 +61,19 @@ def simple_fork():
 	start_base.enter_zone(d3)
 	start_base.enter_zone(d4)
 	drones = assign_path_drone(simple_fork)
-	while any(drone.path for drone in drones):
-		move_one_turn(simple_fork, drones)
-		print_movement(simple_fork, drones)
-
+	turn = 0
+	while drones:
+		turn += 1
+		print(f"\n=====(turn: {turn})=====")
+		movement = move_one_turn(simple_fork, drones)
+		print(" ".join(movement))
+		drones = [drone for drone in drones if drone not in Goal.drones]
+		if drones and not movement:
+			print("[ERRORE] - Simulazione Bloccata")
+			exit(0)
+"""
+print("==== MAP1 - Easy ====")
+easy_linear_map()"""
+print("==== MAP2 - Easy ====")
 simple_fork()
 

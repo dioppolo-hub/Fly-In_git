@@ -6,21 +6,21 @@
 #    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/09/21 15:16:35 by dioppolo          #+#    #+#              #
-#    Updated: 2026/09/23 14:37:30 by dioppolo         ###   ########.fr        #
+#    Updated: 2026/09/29 10:28:37 by dioppolo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 from Drones import Drone
 from Map import GridMap
-from Zones import Zone
+from Zones import Zone, Start_zone, End_zone
 from Connections import Connection
 from typing import Any
 
-def A_Star(map: GridMap):
-	Start = map.get_start_zone()
-	End = map.get_end_zone()
+def A_Star(map: GridMap, Start: Zone, End: Zone, avoided_zone: set[Zone] | None = None):
 	if Start is None or End is None:
 		return []
+	if avoided_zone is None:
+		avoided_zone = set()
 	open = {Start}
 	path: dict = {}
 	g_score = {
@@ -39,7 +39,7 @@ def A_Star(map: GridMap):
 			return build_path(path, Start, End)
 		open.remove(curr)
 		for neighbour in curr.get_neighbours():
-			if neighbour.is_blocked:
+			if neighbour.is_blocked or neighbour in avoided_zone:
 				continue
 			temp_g = g_score[curr] + neighbour.cost
 			if temp_g < g_score[neighbour]:

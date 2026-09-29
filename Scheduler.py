@@ -6,7 +6,7 @@
 #    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/09/23 13:52:39 by dioppolo          #+#    #+#              #
-#    Updated: 2026/09/28 13:36:05 by dioppolo         ###   ########.fr        #
+#    Updated: 2026/09/29 10:33:25 by dioppolo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,14 +19,18 @@ from Algorithm import A_Star
 
 def assign_path_drone(map: GridMap) -> list:
 	zones = map.get_all_zones()
+	Start = map.get_start_zone()
+	End = map.get_end_zone()
 	drones = []
 	for zone in zones:
 		drones += zone.get_drones()
 	for d in drones:
-		d.path = A_Star(map)
+		path = A_Star(map, Start, End, None)
+		"""MODIFICA LO 0: CON 1: PER NON VEDERE START A TURNO 1"""
+		d.path = path[1:] if path else []
 	return drones
 
-def move_one_turn(map: GridMap, drones: list[Drone]) -> None:
+def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 	zones = map.get_all_zones()
 	zone_by_drone = {}
 	for zone in zones:
@@ -63,6 +67,17 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> None:
 					changed = True
 		if not changed:
 			break
+	end_zone = map.get_end_zone()
+	avoided_zones = {
+		dest for index, (_, _, dest) in enumerate(candidates)
+		if not accepted[index]
+	}
+	for index, (drone, curr_zone, _) in enumerate(candidates):
+		if accepted[index]:
+			continue
+		new_path = A_Star(map, curr_zone, end_zone, avoided_zones)
+		if new_path:
+			drone.path = new_path[1:]
 	selected_moves = [
 		candidate for index, candidate in enumerate(candidates)
 		if accepted[index]
@@ -73,3 +88,6 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> None:
 		next_zone.enter_zone(drone)
 		drone.path.pop(0)
 		drone.status = "moving" if drone.path else "idle"
+	return [f"D{drone.drone_id}-{next_zone.name}"
+			for drone, _, next_zone in selected_moves
+		]
