@@ -1,7 +1,7 @@
 from Zones import Zone, Blocked_zone, Restricted_zone, Priority_zone, Start_zone, End_zone
 from Drones import Drone
 from Map import GridMap
-from Algorithm import A_Star
+from parcing import MapParser, Errors
 from Scheduler import assign_path_drone, move_one_turn
 
 
@@ -72,6 +72,11 @@ def simple_fork():
 			print("[ERRORE] - Simulazione Bloccata")
 			exit(0)
 
-print("==== MAP2 - Easy ====")
-simple_fork()
+def test():
+	map = MapParser("maps/easy/01_linear_path.txt")
+	try:
+		map.parce_map()
+	except Errors as error:
+		print(error)
 
+test()
