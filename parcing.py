@@ -12,6 +12,7 @@ class MapParser():
 		self.name = name
 		self.error = []
 		self.start_info = []
+		self.conn_info = []
 		self.end_info = []
 		self.zone_info = []
 		self.n_drones = 0
@@ -42,7 +43,7 @@ class MapParser():
 				elif line.startswith("hub:"):
 					self.zone_info.append(line.split(":")[1])
 				elif line.startswith("connection:"):
-					self.conn_info
+					self.conn_info.append(line.split(":")[1])
 	
 
 
