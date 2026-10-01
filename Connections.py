@@ -5,25 +5,17 @@ from Drones import Drone
 class Connection():
 	def __init__(
 		self,
-		x: int,
-		y: int,
 		zone_a: Zone,
-		zone_b: Zone,
-		name: str
+		zone_b: Zone
 	):
 		self.zone_a = zone_a
 		self.zone_b = zone_b
-		self.name = name
-		self.x, self.y = x, y
 		self.capacity = 1
 		self.bidirectional = True
 		self.waiting_drones = []
 		self.active_drones = []
 		zone_a.add_connection(self)
 		zone_b.add_connection(self)
-
-	def get_conn_pos(self) -> tuple:
-		return (self.x, self.y)
 
 	def get_other_zone(self, zone) -> Zone:
 		if zone == self.zone_a:
@@ -45,8 +37,6 @@ class Connection():
 		if not self.can_enter_conn(drone):
 			return False
 		self.active_drones.append(drone)
-		drone.x = self.x
-		drone.y = self.y
 		return True
 
 	def leave_conn(self, drone) -> bool:

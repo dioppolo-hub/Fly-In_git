@@ -1,4 +1,4 @@
-from Zones import Zone, Blocked_zone, Restricted_zone, Priority_zone, Start_zone, End_zone
+from Zones import Zone, Start_zone, End_zone
 from Drones import Drone
 from Map import GridMap
 from parcing import MapParser, Errors

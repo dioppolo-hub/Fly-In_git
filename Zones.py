@@ -2,12 +2,13 @@ from typing import Any
 
 
 class Zone():
-	def __init__(self, x: int, y: int, name: str, capacity: int):
+	def __init__(self, name: str, x: int, y: int):
 		self.name = name
-		self.capacity = capacity
+		self.capacity = 1
 		self.x, self.y = x, y
 		self.priority = 0
 		self.cost = 1
+		self.color = "blue"
 		self.is_blocked = False
 		self.neighbours = set()
 		self.drones = []
@@ -94,28 +95,13 @@ class Zone():
 
 
 class Start_zone(Zone):
-	def __init__(self, x: int, y: int, name: str, capacity: int):
-		super().__init__(x, y, name, capacity)
+	def __init__(self, name: str, x: int, y: int):
+		super().__init__(name, x, y)
+		self.capacity = float('inf')
 
 
 class End_zone(Zone):
-	def __init__(self, x: int, y: int, name: str, capacity: int):
-		super().__init__(x, y, name, capacity)
+	def __init__(self, name: str, x: int, y: int):
+		super().__init__(name, x, y)
+		self.capacity = float('inf')
 
-
-class Restricted_zone(Zone):
-	def __init__(self, x: int, y: int, name: str, capacity: int):
-		super().__init__(x, y, name, capacity)
-		self.cost = 2
-
-
-class Priority_zone(Zone):
-	def __init__(self, x: int, y: int, name: str, capacity: int):
-		super().__init__(x, y, name, capacity)
-		self.priority = 1
-
-
-class Blocked_zone(Zone):
-	def __init__(self, x: int, y: int, name: str, capacity: int):
-		super().__init__(x, y, name, capacity)
-		self.is_blocked = True
