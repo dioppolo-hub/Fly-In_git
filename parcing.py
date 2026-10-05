@@ -226,8 +226,8 @@ class MapParser():
 		for i in self.connections:
 			i.zone_a.connect_zones(i.zone_b)
 		n_d = self.n_drones
+		id = 1
 		while n_d > 0:
-			id = 1
 			d = Drone(f"D{id}", id)
 			start.enter_zone(d)
 			id += 1

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Scheduler.py                                       :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: diego <diego@student.42.fr>                +#+  +:+       +#+         #
+#    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/09/23 13:52:39 by dioppolo          #+#    #+#              #
-#    Updated: 2026/09/29 15:12:47 by diego            ###   ########.fr        #
+#    Updated: 2026/10/05 16:34:04 by dioppolo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -68,7 +68,11 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 				"""Conta quanti droni resterebbero oltre la capacita'
 				Se overflow e' minore di 0 significa che la capacita'
 				e' rispettata, se e' positivo ci sono troppi arrivi"""
-				overflow = len(zone.drones) + len(incoming) - outgoing - zone.capacity
+				capacity = float(zone.capacity)
+				if capacity == float('inf'):
+					overflow = 0
+				else:
+					overflow = len(zone.drones) + len(incoming) - outgoing - int(capacity)
 				if overflow > 0:
 					for index in reversed(incoming[-overflow:]):
 						accepted[index] = False

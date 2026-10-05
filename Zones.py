@@ -34,7 +34,10 @@ class Zone():
 		return connection
 
 	def is_zone_full(self) -> bool:
-		if len(self.drones) >= self.capacity:
+		capacity = float(self.capacity)
+		if capacity == float('inf'):
+			capacity = 100000000
+		if len(self.drones) >= capacity:
 			return True
 		else:
 			return False
