@@ -1,4 +1,5 @@
 from typing import Any
+from Drones import Drone
 from Zones import Start_zone, End_zone, Zone
 from Connections import Connection
 from Map import GridMap
@@ -19,7 +20,8 @@ class MapParser():
 		self.connections = []
 		self.n_drones = 0
 
-	def parce_map(self):
+
+	def parce_map(self) -> GridMap:
 		start = 0
 		end = 0
 		phase = 0
@@ -68,6 +70,10 @@ class MapParser():
 					self.conn_info.append(item)
 					self.connections.append(self.parce_conn_info(item, i))
 			self.repetition_zone_name()
+			self.check_same_cords_zone()
+			map = self.create_map()
+		return map
+
 
 	def parce_conn_info(self, item: str, line: int) -> Connection:
 		zones_by_names = {}
@@ -149,6 +155,7 @@ class MapParser():
 					start.color = color
 		return start
 
+
 	def parce_end_info(self, line) -> End_zone:
 		if not self.end_info:
 			raise Errors(f"[ERRORS], line {line}, Missing end hub")
@@ -174,15 +181,55 @@ class MapParser():
 		return end
 
 
-	def repetition_zone_name(self) -> int:
-		for z1 in self.zones:
-			for z2 in self.zones[1:]:
-				print(z1.name, z2.name)
-				if z1.name == z2.name:
-					raise Errors(f"[ERROR], Zones cannot have the same name")
-		return 1
+	def repetition_zone_name(self) -> None:
+		for z in self.zones:
+			count = 0
+			for i in self.zones:
+				if z.name == i.name:
+					count += 1
+					if count > 1:
+						raise Errors(f"[ERROR], Multiple Zones with same name")
+
 
 	def zone_name(self, name: str, line: int) -> bool:
 		if name.find("/") != -1 or name.find(" ") != -1:
 			raise Errors(f"[ERROR], line {line}, Invalid zone name")
 		return True
+
+
+	def check_same_cords_zone(self) -> None:
+		for z in self.zones:
+			count = 0
+			for i in self.zones:
+				if z.x == i.x and z.y == i.y:
+					count += 1
+					if count > 1:
+						raise Errors(f"[ERROR], Multiple zones with same coordinates")
+
+
+	def create_map(self) -> GridMap:
+		min_x, max_x, min_y, max_y = 0, 0, 0, 0
+		for z in self.zones:
+			if z.x < min_x:
+				min_x = z.x
+			if z.x > max_x:
+				max_x = z.x
+			if z.y < min_y:
+				min_y = z.y
+			if z.y > max_y:
+				max_y = z.y
+		map = GridMap(min_x, max_x, min_y, max_y)
+		for z in self.zones:
+			map.add_zone(z)
+			if isinstance(z, Start_zone):
+				start = z
+		for i in self.connections:
+			i.zone_a.connect_zones(i.zone_b)
+		n_d = self.n_drones
+		while n_d > 0:
+			id = 1
+			d = Drone(f"D{id}", id)
+			start.enter_zone(d)
+			id += 1
+			n_d -= 1
+		return map
