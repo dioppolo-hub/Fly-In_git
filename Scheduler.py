@@ -6,7 +6,7 @@
 #    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/09/23 13:52:39 by dioppolo          #+#    #+#              #
-#    Updated: 2026/10/06 09:52:47 by dioppolo         ###   ########.fr        #
+#    Updated: 2026/10/06 11:07:27 by dioppolo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -108,6 +108,8 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 		curr_zone.leave_zone(drone)
 	"""INSERIRE QUI CHECK E GESTIONE RESTRICTED"""
 	for drone, _, next_zone in selected_moves:
+		if next_zone.cost == 2:
+			
 		next_zone.enter_zone(drone)
 		drone.path.pop(0)
 		drone.status = "moving" if drone.path else "idle"
