@@ -6,7 +6,7 @@ from Scheduler import assign_path_drone, move_one_turn
 
 
 def test():
-	parced = MapParser("maps/easy/03_basic_capacity.txt")
+	parced = MapParser("maps/medium/02_circular_loop.txt")
 	try:
 		map = parced.parce_map()
 		drones = assign_path_drone(map)

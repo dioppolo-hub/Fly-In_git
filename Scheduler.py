@@ -6,7 +6,7 @@
 #    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/09/23 13:52:39 by dioppolo          #+#    #+#              #
-#    Updated: 2026/10/05 16:34:04 by dioppolo         ###   ########.fr        #
+#    Updated: 2026/10/06 09:52:47 by dioppolo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -54,6 +54,8 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 		accepted = [index not in blocked for index in range(len(candidates))]
 		while True:
 			changed = False
+			"""PER PRIORITY APPLICARE UN CRITERIO DI PRIORITA' SU CANDIDATES
+				PRIMA DI SELEZIONARE QUALI DRONI RIFIUTARE E QUALI ACCETTARE"""
 			for zone in zones:
 				"""Conta le mosse in cui i droni vogliono entrare in una zona"""
 				incoming = [
@@ -104,6 +106,7 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 	]
 	for drone, curr_zone, _ in selected_moves:
 		curr_zone.leave_zone(drone)
+	"""INSERIRE QUI CHECK E GESTIONE RESTRICTED"""
 	for drone, _, next_zone in selected_moves:
 		next_zone.enter_zone(drone)
 		drone.path.pop(0)
