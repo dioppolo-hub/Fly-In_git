@@ -27,12 +27,6 @@ class Zone():
 		self.connections[other_zone] = connection
 		return True
 
-	def get_available_conn(self, next_zone, drone) -> Any:
-		connection = self.connections.get(next_zone)
-		if connection is None or not connection.can_enter_conn(drone):
-			return None
-		return connection
-
 	def is_zone_full(self) -> bool:
 		capacity = float(self.capacity)
 		if capacity == float('inf'):
