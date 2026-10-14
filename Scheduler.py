@@ -6,7 +6,7 @@
 #    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/09/23 13:52:39 by dioppolo          #+#    #+#              #
-#    Updated: 2026/10/13 12:22:26 by dioppolo         ###   ########.fr        #
+#    Updated: 2026/10/14 11:47:39 by dioppolo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -142,6 +142,7 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 			drone.path.pop(0)
 			drone.status = "moving" if drone.path else "idle"
 			movement.append(f"D{drone.drone_id}-{next_zone.name}")
+
 	"""Gestione dei droni che devono andare dalla conn alla zona"""
 	for drone, conn, target in transiting:
 		if not target.enter_zone(drone):
@@ -152,6 +153,7 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 		drone.path.pop(0)
 		drone.status = "moving" if drone.path else "idle"
 		movement.append(f"D{drone.drone_id}-{target.name}")
+
 	"""Gestione dei droni che dalla zona devono entare nella conn"""
 	for drone, curr_zone, next_zone in restricted_moves:
 		conn = get_connection(curr_zone, next_zone)
