@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Scheduler.py                                       :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
+#    By: diego <diego@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/09/23 13:52:39 by dioppolo          #+#    #+#              #
-#    Updated: 2026/10/14 11:47:39 by dioppolo         ###   ########.fr        #
+#    Updated: 2026/10/18 17:00:02 by diego            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -75,6 +75,7 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 		accepted = [index not in blocked for index in range(len(candidates))]
 		while True:
 			changed = False
+			connection_requests = {}
 			"""PER PRIORITY APPLICARE UN CRITERIO DI PRIORITA' SU CANDIDATES
 				PRIMA DI SELEZIONARE QUALI DRONI RIFIUTARE E QUALI ACCETTARE"""
 			for zone in zones:
@@ -100,6 +101,20 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 					for index in reversed(incoming[-overflow:]):
 						accepted[index] = False
 						changed = True
+			for index, (_, source, destination) in enumerate(candidates):
+				if not accepted[index] or destination.cost != 2:
+					continue
+				conn = get_connection(source, destination)
+				if conn is None:
+					accepted[index] = False
+					changed = True
+					continue
+				connection_requests.setdefault(conn, []).append(index)
+			for conn, indexes in connection_requests.items():
+				available = max(0, conn.capacity - len(conn.active_drones))
+				for index in reversed(indexes[available:]):
+					accepted[index] = False
+					changed = True
 			if not changed:
 				break
 		rejected = [
@@ -137,6 +152,13 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 	"""Per le zone normali entra in zone e fai pop del path"""
 	for drone, curr_zone, _ in normal_moves:
 		curr_zone.leave_zone(drone)
+	for drone, curr_zone, next_zone in restricted_moves:
+		conn = get_connection(curr_zone, next_zone)
+		if conn is not None and conn.enter_conn(drone):
+			curr_zone.leave_zone(drone)
+			drone.current_connection = conn
+			drone.transit_target = next_zone
+			movement.append(f"D{drone.drone_id}-{conn.zone_a.name}-{conn.zone_b.name}")
 	for drone, curr_zone, next_zone in normal_moves:
 		if next_zone.enter_zone(drone):
 			drone.path.pop(0)
@@ -155,11 +177,4 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 		movement.append(f"D{drone.drone_id}-{target.name}")
 
 	"""Gestione dei droni che dalla zona devono entare nella conn"""
-	for drone, curr_zone, next_zone in restricted_moves:
-		conn = get_connection(curr_zone, next_zone)
-		if conn is not None and conn.enter_conn(drone):
-			curr_zone.leave_zone(drone)
-			drone.current_connection = conn
-			drone.transit_target = next_zone
-			movement.append(f"D{drone.drone_id}-{conn.zone_a.name}-{conn.zone_b.name}")
 	return movement
