@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Scheduler.py                                       :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: diego <diego@student.42.fr>                +#+  +:+       +#+         #
+#    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/09/23 13:52:39 by dioppolo          #+#    #+#              #
-#    Updated: 2026/10/18 17:00:02 by diego            ###   ########.fr        #
+#    Updated: 2026/10/19 13:29:44 by dioppolo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -93,10 +93,11 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 				Se overflow e' minore di 0 significa che la capacita'
 				e' rispettata, se e' positivo ci sono troppi arrivi"""
 				capacity = float(zone.capacity)
+				transit_incoming = sum(1 for _, _, target in transiting if target is zone)
 				if capacity == float('inf'):
 					overflow = 0
 				else:
-					overflow = len(zone.drones) + len(incoming) - outgoing - int(capacity)
+					overflow = len(zone.drones) + len(incoming) + transit_incoming - outgoing - int(capacity)
 				if overflow > 0:
 					for index in reversed(incoming[-overflow:]):
 						accepted[index] = False
@@ -111,7 +112,8 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 					continue
 				connection_requests.setdefault(conn, []).append(index)
 			for conn, indexes in connection_requests.items():
-				available = max(0, conn.capacity - len(conn.active_drones))
+				transit_leaving = sum(1 for _, transit_conn, _ in transiting if transit_conn is conn)
+				available = max(0, conn.capacity - len(conn.active_drones) + transit_leaving)
 				for index in reversed(indexes[available:]):
 					accepted[index] = False
 					changed = True
@@ -150,22 +152,6 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 		else:
 			normal_moves.append((drone, curr_zone, next_zone))
 	"""Per le zone normali entra in zone e fai pop del path"""
-	for drone, curr_zone, _ in normal_moves:
-		curr_zone.leave_zone(drone)
-	for drone, curr_zone, next_zone in restricted_moves:
-		conn = get_connection(curr_zone, next_zone)
-		if conn is not None and conn.enter_conn(drone):
-			curr_zone.leave_zone(drone)
-			drone.current_connection = conn
-			drone.transit_target = next_zone
-			movement.append(f"D{drone.drone_id}-{conn.zone_a.name}-{conn.zone_b.name}")
-	for drone, curr_zone, next_zone in normal_moves:
-		if next_zone.enter_zone(drone):
-			drone.path.pop(0)
-			drone.status = "moving" if drone.path else "idle"
-			movement.append(f"D{drone.drone_id}-{next_zone.name}")
-
-	"""Gestione dei droni che devono andare dalla conn alla zona"""
 	for drone, conn, target in transiting:
 		if not target.enter_zone(drone):
 			continue
@@ -175,6 +161,21 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 		drone.path.pop(0)
 		drone.status = "moving" if drone.path else "idle"
 		movement.append(f"D{drone.drone_id}-{target.name}")
+	for drone, curr_zone, next_zone in restricted_moves:
+		conn = get_connection(curr_zone, next_zone)
+		if conn is not None and conn.enter_conn(drone):
+			curr_zone.leave_zone(drone)
+			drone.current_connection = conn
+			drone.transit_target = next_zone
+			movement.append(f"D{drone.drone_id}-{conn.zone_a.name}-{conn.zone_b.name}")
+	for drone, curr_zone, next_zone in normal_moves:
+		if next_zone.enter_zone(drone):
+			curr_zone.leave_zone(drone)
+			drone.path.pop(0)
+			drone.status = "moving" if drone.path else "idle"
+			movement.append(f"D{drone.drone_id}-{next_zone.name}")
+
+	"""Gestione dei droni che devono andare dalla conn alla zona"""
 
 	"""Gestione dei droni che dalla zona devono entare nella conn"""
 	return movement
