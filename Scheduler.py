@@ -6,7 +6,7 @@
 #    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/09/23 13:52:39 by dioppolo          #+#    #+#              #
-#    Updated: 2026/10/19 13:29:44 by dioppolo         ###   ########.fr        #
+#    Updated: 2026/10/19 15:50:00 by dioppolo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -145,13 +145,15 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 	"""GESTIONE MOSSE"""
 	normal_moves = []
 	restricted_moves = []
-	"""Divido le mosse normali dalle mosse in caso di zona restricted"""
 	for drone, curr_zone, next_zone in selected_moves:
 		if next_zone.cost == 2:
 			restricted_moves.append((drone, curr_zone, next_zone))
 		else:
 			normal_moves.append((drone, curr_zone, next_zone))
-	"""Per le zone normali entra in zone e fai pop del path"""
+
+	for drone, curr_zone, _ in normal_moves:
+		curr_zone.leave_zone(drone)
+
 	for drone, conn, target in transiting:
 		if not target.enter_zone(drone):
 			continue
@@ -161,6 +163,7 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 		drone.path.pop(0)
 		drone.status = "moving" if drone.path else "idle"
 		movement.append(f"D{drone.drone_id}-{target.name}")
+
 	for drone, curr_zone, next_zone in restricted_moves:
 		conn = get_connection(curr_zone, next_zone)
 		if conn is not None and conn.enter_conn(drone):
@@ -168,14 +171,10 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 			drone.current_connection = conn
 			drone.transit_target = next_zone
 			movement.append(f"D{drone.drone_id}-{conn.zone_a.name}-{conn.zone_b.name}")
+
 	for drone, curr_zone, next_zone in normal_moves:
 		if next_zone.enter_zone(drone):
-			curr_zone.leave_zone(drone)
 			drone.path.pop(0)
 			drone.status = "moving" if drone.path else "idle"
 			movement.append(f"D{drone.drone_id}-{next_zone.name}")
-
-	"""Gestione dei droni che devono andare dalla conn alla zona"""
-
-	"""Gestione dei droni che dalla zona devono entare nella conn"""
 	return movement
