@@ -26,7 +26,7 @@ class MapParser():
 		end = 0
 		phase = 0
 		with open(self.name, "r") as f:
-			for i, line in enumerate(f):
+			for i, line in enumerate(f, start=1):
 				if line.startswith("nb_drones:"):
 					if phase != 0:
 						raise Errors(f"[ERROR], nb_drones must be declared first")
@@ -127,7 +127,7 @@ class MapParser():
 					if zone_type == "restricted":
 						hub.cost = 2
 					elif zone_type == "priority":
-						hub.priority = 1
+						hub.cost = 0.9
 		return hub
 
 

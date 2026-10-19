@@ -6,7 +6,6 @@ class Zone():
 		self.name = name
 		self.capacity = 1
 		self.x, self.y = x, y
-		self.priority = 0
 		self.cost = 1
 		self.color = "blue"
 		self.is_blocked = False
