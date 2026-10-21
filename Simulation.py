@@ -3,19 +3,23 @@ from Drones import Drone
 from Map import GridMap
 from parcing import MapParser, Errors
 from Scheduler import assign_path_drone, move_one_turn
+from Visual_Rep import Graphic
 
 
 def test():
-	parced = MapParser("maps/medium/02_circular_loop.txt")
+	parced = MapParser("maps/hard/01_maze_nightmare.txt")
 	try:
+		movement = []
 		map = parced.parce_map()
 		drones = assign_path_drone(map)
 		end = map.get_end_zone()
 		turn = 0
+		test = Graphic()
 		while drones:
 			turn += 1
-			print(f"\n=====(turn: {turn})=====")
+			test.visual_rep(map, movement, turn)
 			movement = move_one_turn(map, drones)
+			print(f"\n=====(turn: {turn})=====")
 			print(" ".join(movement))
 			drones = [drone for drone in drones if drone not in end.drones]
 			if drones and not movement:
