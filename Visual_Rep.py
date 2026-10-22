@@ -61,11 +61,12 @@ class Graphic:
 			all_drones.add(drone)
 		for z in zones:
 			zx, zy = save_zone_pos[z]
-			zones_data.append((zx, zy, z.color))
+			zones_data.append((zx, zy, z.color, z.name, z.cost))
 			for n in z.get_neighbours():
 				if n in save_zone_pos:
 					nx, ny = save_zone_pos[n]
 					lines_data.append(((zx, zy), (nx, ny)))
+		font = pygame.font.SysFont("Arial", 20)
 		running = True
 		while running:
 			for event in pygame.event.get():
@@ -74,8 +75,16 @@ class Graphic:
 			screen.fill(black)
 			for start_point, end_point in lines_data:
 				pygame.draw.line(screen, (70, 70, 70), start_point, end_point)
-			for zx, zy, color in zones_data:
+			for zx, zy, color, name, cost in zones_data:
 				pygame.draw.circle(screen, color, (zx, zy), 50)
+				if int(cost) == 1:
+					testo = font.render(str(name), True, (60, 60, 60))
+				elif float(cost) == 0.9:
+					testo = font.render(f"P:{str(name)}", True, (60, 60, 60))
+				elif float(cost) == 2:
+					testo = font.render(f"R:{str(name)}", True, (60, 60, 60))
+				testo_rect = testo.get_rect(center=(zx, zy))
+				screen.blit(testo, testo_rect)
 			all_drones.draw(screen)
 			time.sleep(0.01)
 			pygame.display.flip()
