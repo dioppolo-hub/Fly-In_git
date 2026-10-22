@@ -2,14 +2,13 @@ from Zones import Zone, Start_zone, End_zone
 from Drones import Drone
 from Map import GridMap
 from parcing import MapParser, Errors
-from Scheduler import assign_path_drone, move_one_turn
+from Scheduler import assign_path_drone
 from Visual_Rep import Graphic
 
 
 def test():
 	parced = MapParser("maps/hard/01_maze_nightmare.txt")
 	try:
-		movement = []
 		map = parced.parce_map()
 		drones = assign_path_drone(map)
 		end = map.get_end_zone()
@@ -17,10 +16,8 @@ def test():
 		test = Graphic()
 		while drones:
 			turn += 1
-			test.visual_rep(map, movement, turn)
-			movement = move_one_turn(map, drones)
+			test.visual_rep(map, drones, turn)
 			print(f"\n=====(turn: {turn})=====")
-			print(" ".join(movement))
 			drones = [drone for drone in drones if drone not in end.drones]
 			if drones and not movement:
 				print("[ERRORE] - Simulazione Bloccata")

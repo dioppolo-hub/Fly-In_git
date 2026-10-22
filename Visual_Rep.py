@@ -1,6 +1,8 @@
-import pygame, sys, time
+import pygame, sys, time, math
 from Map import GridMap
+from Drones import Drone
 from Zones import Zone, Start_zone, End_zone
+from Scheduler import move_one_turn
 
 
 class DroneSprite(pygame.sprite.Sprite):
@@ -18,7 +20,7 @@ class Graphic:
 	def __init__(self):
 		self.dronespng = []
 
-	def visual_rep(self, map: GridMap, movement: list[str], turn: int):
+	def visual_rep(self, map: GridMap, turn: int, drones: list[Drone]):
 		pygame.init()
 		drones = []
 		all_drones = pygame.sprite.Group()
@@ -26,8 +28,6 @@ class Graphic:
 		speed = [2, 2]
 		zones = map.get_all_zones()
 		start = map.get_start_zone()
-		if turn == 1:
-			drones = start.get_drones()
 		black = 0, 0, 0
 		screen = pygame.display.set_mode(size)
 		if zones:
@@ -61,7 +61,7 @@ class Graphic:
 			all_drones.add(drone)
 		for z in zones:
 			zx, zy = save_zone_pos[z]
-			zones_data.append((zx, zy, z.color, z.name, z.cost))
+			zones_data.append((zx, zy, z.color, z.name, z.cost, z.capacity))
 			for n in z.get_neighbours():
 				if n in save_zone_pos:
 					nx, ny = save_zone_pos[n]
@@ -72,18 +72,32 @@ class Graphic:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					sys.exit()
+				elif event.type == pygame.KEYDOWN:
+					if event.key == pygame.K_SPACE:
+						movement = move_one_turn(map, drones)
+						print(" ".join(movement))
 			screen.fill(black)
 			for start_point, end_point in lines_data:
 				pygame.draw.line(screen, (70, 70, 70), start_point, end_point)
-			for zx, zy, color, name, cost in zones_data:
+			for zx, zy, color, name, cost, capacity in zones_data:
+				capacity_label = (
+					f" MAX:{capacity}"
+					if math.isfinite(float(capacity)) and float(capacity) > 1
+					else ""
+					)
 				pygame.draw.circle(screen, color, (zx, zy), 50)
 				if int(cost) == 1:
-					testo = font.render(str(name), True, (60, 60, 60))
+					testo = font.render(
+						f"{str(name)}{capacity_label}", True, (255, 255, 255)
+						)
 				elif float(cost) == 0.9:
-					testo = font.render(f"P:{str(name)}", True, (60, 60, 60))
+					testo = font.render(
+						f"P: {str(name)}{capacity_label}", True, (255, 255, 255)
+						)
 				elif float(cost) == 2:
-					testo = font.render(f"R:{str(name)}", True, (60, 60, 60))
-				testo_rect = testo.get_rect(center=(zx, zy))
+					testo = font.render(
+						f"R: {str(name)}{capacity_label}", True, (255, 255, 255))
+				testo_rect = testo.get_rect(center=(zx, zy-75))
 				screen.blit(testo, testo_rect)
 			all_drones.draw(screen)
 			time.sleep(0.01)

@@ -53,6 +53,11 @@ class GridMap:
 			if isinstance(zone, End_zone):
 				return zone
 
+	def get_zone_by_name(self, name: str) -> Zone | None:
+		for zone in self.zones:
+			if zone.name == name:
+				return zone
+		return None
 
 	def get_all_zones(self) -> list:
 		return list(self.zones.values())
