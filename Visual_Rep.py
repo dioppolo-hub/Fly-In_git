@@ -22,12 +22,11 @@ class Graphic:
 
 	def visual_rep(self, map: GridMap, turn: int, drones: list[Drone]):
 		pygame.init()
-		drones = []
 		all_drones = pygame.sprite.Group()
+		drone_sprites = {}
 		size = width, height = 1920, 1000
-		speed = [2, 2]
 		zones = map.get_all_zones()
-		start = map.get_start_zone()
+		speed = [2, 2]
 		black = 0, 0, 0
 		screen = pygame.display.set_mode(size)
 		if zones:
@@ -56,9 +55,10 @@ class Graphic:
 		zones_data = []
 		lines_data = []
 		for d in drones:
-			d.x, d.y = scale_pos(d.x, d.y)
-			drone = DroneSprite(pygame.image.load("Drone.png"), d.x, d.y)
+			dx, dy = scale_pos(d.x, d.y)
+			drone = DroneSprite(pygame.image.load("Drone.png"), dx, dy)
 			all_drones.add(drone)
+			drone_sprites[d] = drone
 		for z in zones:
 			zx, zy = save_zone_pos[z]
 			zones_data.append((zx, zy, z.color, z.name, z.cost, z.capacity))
@@ -71,11 +71,25 @@ class Graphic:
 		while running:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
+					pygame.quit()
 					sys.exit()
 				elif event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_SPACE:
 						movement = move_one_turn(map, drones)
+						for m in movement:
+							d_id, zname = m.split("-")
+							zone = map.get_zone_by_name(zname)
+							d_label = int(d_id[1:])
+							drone = map.get_drone_by_id(d_label)
+							if zone and drone:
+								drone.x, drone.y = zone.x, zone.y
+								if drone in drone_sprites:
+									sx, sy = scale_pos(drone.x, drone.y)
+									drone_sprites[drone].update_pos(sx, sy)
 						print(" ".join(movement))
+						if drones and not movement:
+							print("[ERRORE] - Simulazione Bloccata")
+							exit(0)
 			screen.fill(black)
 			for start_point, end_point in lines_data:
 				pygame.draw.line(screen, (70, 70, 70), start_point, end_point)

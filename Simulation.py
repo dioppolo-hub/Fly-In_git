@@ -16,12 +16,9 @@ def test():
 		test = Graphic()
 		while drones:
 			turn += 1
-			test.visual_rep(map, drones, turn)
+			test.visual_rep(map, turn, drones)
 			print(f"\n=====(turn: {turn})=====")
 			drones = [drone for drone in drones if drone not in end.drones]
-			if drones and not movement:
-				print("[ERRORE] - Simulazione Bloccata")
-				exit(0)
 	except Errors as error:
 		print(error)
 

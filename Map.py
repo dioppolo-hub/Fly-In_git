@@ -1,4 +1,5 @@
 from Zones import Zone, Start_zone, End_zone
+from Drones import Drone
 
 
 class GridMap:
@@ -54,9 +55,24 @@ class GridMap:
 				return zone
 
 	def get_zone_by_name(self, name: str) -> Zone | None:
-		for zone in self.zones:
+		for zone in self.zones.values():
 			if zone.name == name:
 				return zone
+		return None
+
+	def get_drone_by_id(self, drone_id: int) -> Drone | None:
+		checked_con = set()
+		for zone in self.zones.values():
+			for drone in zone.drones:
+				if drone.drone_id == drone_id:
+					return drone
+		for conn in zone.connections.values():
+			if conn in checked_con:
+				continue
+			checked_con.add(conn)
+			for drone in conn.active_drones + conn.waiting_drones:
+				if drone.drone_id == drone_id:
+					return drone
 		return None
 
 	def get_all_zones(self) -> list:
