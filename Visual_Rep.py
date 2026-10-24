@@ -10,11 +10,25 @@ class DroneSprite(pygame.sprite.Sprite):
 		super().__init__()
 		self.image = image
 		self.rect = self.image.get_rect()
-		self.rect.center = (x, y)
+		self.x, self.y = float(x), float(y)
+		self.target_x, self.target_y = float(x), float(y)
+		self.rect.center = (int(x), int(y))
 
-	def update_pos(self, x, y):
-		self.rect.center = (x, y)
+	def set_target(self, tx, ty):
+		self.target_x = float(tx)
+		self.target_y = float(ty)
 
+	def update_pos(self, speed):
+		dx = self.target_x - self.x
+		dy = self.target_y - self.y
+		distance = math.hypot(dx, dy)
+		if distance > speed:
+			self.x += (dx / distance) * speed
+			self.y += (dy / distance) * speed
+		else:
+			self.x = self.target_x
+			self.y = self.target_y
+		self.rect.center = (int(self.x), int(self.y))
 
 class Graphic:
 	def __init__(self):
@@ -28,7 +42,7 @@ class Graphic:
 		size = width, height = 1920, 1000
 		zones = map.get_all_zones()
 		end = map.get_end_zone()
-		speed = [2, 2]
+		speed = 20.0
 		black = 0, 0, 0
 		screen = pygame.display.set_mode(size)
 		if zones:
@@ -86,9 +100,9 @@ class Graphic:
 							drone = map.get_drone_by_id(d_label)
 							if zone and drone:
 								drone.x, drone.y = zone.x, zone.y
+								dest_x, dest_y = scale_pos(drone.x, drone.y)
 								if drone in drone_sprites:
-									sx, sy = scale_pos(drone.x, drone.y)
-									drone_sprites[drone].update_pos(sx, sy)
+									drone_sprites[drone].set_target(dest_x, dest_y)
 						print(f"\n=====(turn: {turn})=====")
 						print(" ".join(movement))
 						if n_drones == len(end.drones):
@@ -96,6 +110,8 @@ class Graphic:
 						if drones and not movement:
 							print("[ERRORE] - Simulazione Bloccata")
 							exit(0)
+			for drone_sprite in drone_sprites.values():
+				drone_sprite.update_pos(speed)
 			screen.fill(black)
 			for start_point, end_point in lines_data:
 				pygame.draw.line(screen, (70, 70, 70), start_point, end_point)
