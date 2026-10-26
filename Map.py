@@ -66,13 +66,13 @@ class GridMap:
 			for drone in zone.drones:
 				if drone.drone_id == drone_id:
 					return drone
-		for conn in zone.connections.values():
-			if conn in checked_con:
-				continue
-			checked_con.add(conn)
-			for drone in conn.active_drones + conn.waiting_drones:
-				if drone.drone_id == drone_id:
-					return drone
+			for conn in zone.connections.values():
+				if conn in checked_con:
+					continue
+				checked_con.add(conn)
+				for drone in conn.active_drones + conn.waiting_drones:
+					if drone.drone_id == drone_id:
+						return drone
 		return None
 
 	def get_all_zones(self) -> list:

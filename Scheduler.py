@@ -3,16 +3,16 @@
 #                                                         :::      ::::::::    #
 #    Scheduler.py                                       :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
+#    By: diego <diego@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/09/23 13:52:39 by dioppolo          #+#    #+#              #
-#    Updated: 2026/10/19 15:55:52 by dioppolo         ###   ########.fr        #
+#    Updated: 2026/10/26 12:18:10 by diego            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 from Drones import Drone
 from Map import GridMap
-from Zones import Zone
+from Zones import Zone, End_zone
 from Connections import Connection
 from typing import Any
 from Algorithm import A_Star

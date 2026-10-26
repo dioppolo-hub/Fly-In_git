@@ -7,7 +7,7 @@ from Visual_Rep import Graphic
 
 
 def test():
-	parced = MapParser("maps/hard/01_maze_nightmare.txt")
+	parced = MapParser("maps/challenger/01_the_impossible_dream.txt")
 	try:
 		map = parced.parce_map()
 		drones = assign_path_drone(map)

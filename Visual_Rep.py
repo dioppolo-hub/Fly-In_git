@@ -94,19 +94,35 @@ class Graphic:
 						movement = move_one_turn(map, drones)
 						turn += 1
 						for m in movement:
-							d_id, zname = m.split("-")
-							zone = map.get_zone_by_name(zname)
-							d_label = int(d_id[1:])
-							drone = map.get_drone_by_id(d_label)
-							if zone and drone:
-								drone.x, drone.y = zone.x, zone.y
-								dest_x, dest_y = scale_pos(drone.x, drone.y)
-								if drone in drone_sprites:
-									drone_sprites[drone].set_target(dest_x, dest_y)
+							z_or_conn = m.count("-")
+							if z_or_conn == 1:
+								d_id, zname = m.split("-")
+								zone = map.get_zone_by_name(zname)
+								d_label = int(d_id[1:])
+								drone = map.get_drone_by_id(d_label)
+								if zone and drone:
+									drone.x, drone.y = zone.x, zone.y
+									dest_x, dest_y = scale_pos(drone.x, drone.y)
+									if drone in drone_sprites:
+										drone_sprites[drone].set_target(dest_x, dest_y)
+							elif z_or_conn == 2:
+								d_id, zstart, zend = m.split("-")
+								zs = map.get_zone_by_name(zstart)
+								ze = map.get_zone_by_name(zend)
+								d_label = int(d_id[1:])
+								drone = map.get_drone_by_id(d_label)
+								if zs and ze and drone:
+									drone.x, drone.y = (zs.x + ze.x) / 2, (zs.y + ze.y) / 2
+									dest_x, dest_y = scale_pos(drone.x, drone.y)
+									if drone in drone_sprites:
+										drone_sprites[drone].set_target(dest_x, dest_y)
 						print(f"\n=====(turn: {turn})=====")
 						print(" ".join(movement))
 						if n_drones == len(end.drones):
-							exit(0)
+							if event.key == pygame.K_ESCAPE:
+								exit(0)
+							else:
+								continue
 						if drones and not movement:
 							print("[ERRORE] - Simulazione Bloccata")
 							exit(0)
@@ -121,7 +137,20 @@ class Graphic:
 					if math.isfinite(float(capacity)) and float(capacity) > 1
 					else ""
 					)
-				pygame.draw.circle(screen, color, (zx, zy), 50)
+				if color == "rainbow":
+					rainbow_colors = [
+						(255, 0, 0),
+						(255, 165, 0),
+						(255, 255, 0),
+						(0, 255, 0),
+						(0, 255, 255),
+						(0, 0, 255),
+						(255, 0, 255)
+					]
+					for radius, color in zip(range(50, 0, -8), rainbow_colors):
+						pygame.draw.circle(screen, color, (zx, zy), radius)
+				else:
+					pygame.draw.circle(screen, color, (zx, zy), 50)
 				if int(cost) == 1:
 					testo = font.render(
 						f"{str(name)}{capacity_label}", True, (255, 255, 255)
