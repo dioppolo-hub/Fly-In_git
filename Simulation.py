@@ -4,10 +4,12 @@ from Map import GridMap
 from parcing import MapParser, Errors
 from Scheduler import assign_path_drone
 from Visual_Rep import Graphic
+from Menu import menu
 
 
-def test():
-	parced = MapParser("maps/challenger/01_the_impossible_dream.txt")
+def main():
+	chosen_map = menu()
+	parced = MapParser(f"maps/{chosen_map}")
 	try:
 		map = parced.parce_map()
 		drones = assign_path_drone(map)
@@ -20,4 +22,4 @@ def test():
 	except Errors as error:
 		print(error)
 
-test()
+main()
