@@ -1,4 +1,3 @@
-from typing import Any
 from Drones import Drone
 from Zones import Start_zone, End_zone, Zone
 from Connections import Connection
@@ -10,14 +9,14 @@ class Errors(Exception):
 
 
 class MapParser():
-	def __init__(self, name):
+	def __init__(self, name: str):
 		self.name = name
-		self.start_info = []
-		self.conn_info = []
-		self.end_info = []
-		self.zone_info = []
-		self.zones = []
-		self.connections = []
+		self.start_info: list = []
+		self.conn_info: list = []
+		self.end_info: list = []
+		self.zone_info: list = []
+		self.zones: list = []
+		self.connections: list = []
 		self.n_drones = 0
 
 
@@ -121,17 +120,17 @@ class MapParser():
 					hub.color = color
 				elif option.startswith("max_drones="):
 					cap = option.split("=", 1)[1]
-					hub.capacity = cap
+					hub.capacity = float(cap)
 				elif option.startswith("zone="):
 					zone_type = option.split("=", 1)[1]
 					if zone_type == "restricted":
-						hub.cost = 2
+						hub.cost = 2.0
 					elif zone_type == "priority":
 						hub.cost = 0.9
 		return hub
 
 
-	def parce_start_info(self, line) -> Start_zone:
+	def parce_start_info(self, line: int) -> Start_zone:
 		if not self.start_info:
 			raise Errors(f"[ERRORS], line {line}, Missing start hub")
 		item = self.start_info[-1].strip()
@@ -156,7 +155,7 @@ class MapParser():
 		return start
 
 
-	def parce_end_info(self, line) -> End_zone:
+	def parce_end_info(self, line: int) -> End_zone:
 		if not self.end_info:
 			raise Errors(f"[ERRORS], line {line}, Missing end hub")
 		item = self.end_info[-1].strip()

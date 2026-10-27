@@ -1,4 +1,4 @@
-from Zones import Zone, Start_zone, End_zone
+from Zones import End_zone
 from Drones import Drone
 from Map import GridMap
 from parcing import MapParser, Errors
@@ -11,10 +11,10 @@ def main():
 	chosen_map = menu()
 	parced = MapParser(f"maps/{chosen_map}")
 	try:
-		map = parced.parce_map()
-		drones = assign_path_drone(map)
-		end = map.get_end_zone()
-		turn = 0
+		map: GridMap = parced.parce_map()
+		drones: list[Drone] = assign_path_drone(map)
+		end: End_zone = map.get_end_zone()
+		turn: int = 0
 		test = Graphic()
 		while drones:
 			test.visual_rep(map, turn, drones)

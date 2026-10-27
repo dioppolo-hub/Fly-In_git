@@ -1,22 +1,7 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Algorithm.py                                       :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/09/21 15:16:35 by dioppolo          #+#    #+#              #
-#    Updated: 2026/09/29 10:28:37 by dioppolo         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
-from Drones import Drone
 from Map import GridMap
-from Zones import Zone, Start_zone, End_zone
-from Connections import Connection
-from typing import Any
+from Zones import Zone
 
-def A_Star(map: GridMap, Start: Zone, End: Zone, avoided_zone: set[Zone] | None = None):
+def A_Star(map: GridMap, Start: Zone, End: Zone, avoided_zone: set[Zone] | None = None) -> list[Zone]:
 	if Start is None or End is None:
 		return []
 	if avoided_zone is None:
@@ -35,18 +20,19 @@ def A_Star(map: GridMap, Start: Zone, End: Zone, avoided_zone: set[Zone] | None 
 	f_score[Start] = Calculate_cost(Start, End, g_score[Start])
 	while open:
 		curr = find_lowest(open, f_score)
-		if curr == End:
-			return build_path(path, Start, End)
-		open.remove(curr)
-		for neighbour in curr.get_neighbours():
-			if neighbour.is_blocked or neighbour in avoided_zone:
-				continue
-			temp_g = g_score[curr] + neighbour.cost
-			if temp_g < g_score[neighbour]:
-				path[neighbour] = curr
-				g_score[neighbour] = temp_g
-				f_score[neighbour] = Calculate_cost(neighbour, End, temp_g)
-				open.add(neighbour)
+		if curr:
+			if curr == End:
+				return build_path(path, Start, End)
+			open.remove(curr)
+			for neighbour in curr.get_neighbours():
+				if neighbour.is_blocked or neighbour in avoided_zone:
+					continue
+				temp_g = g_score[curr] + neighbour.cost
+				if temp_g < g_score[neighbour]:
+					path[neighbour] = curr
+					g_score[neighbour] = temp_g
+					f_score[neighbour] = Calculate_cost(neighbour, End, temp_g)
+					open.add(neighbour)
 	return []
 
 def build_path(path: dict, start: Zone, end: Zone) -> list:
@@ -59,8 +45,8 @@ def build_path(path: dict, start: Zone, end: Zone) -> list:
 	final_path.reverse()
 	return final_path
 
-def find_lowest(open: set, fcost: dict) -> Zone:
-	best_zone: Zone = None
+def find_lowest(open: set, fcost: dict) -> Zone | None:
+	best_zone: Zone | None = None
 	best_f = float('inf')
 	for zone in open:
 		f = fcost[zone]

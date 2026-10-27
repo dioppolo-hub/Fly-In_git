@@ -1,13 +1,15 @@
 import pygame, sys
+from pygame import Surface
+from typing import Any
 
 
 class button:
-	def __init__(self, x, y, width, height, text, action=None):
+	def __init__(self, x: int, y: int, width: int, height: int, text: str, action: None=None):
 		self.rect = pygame.Rect(x, y, width, height)
 		self.text = text
 		self.action = action
 	
-	def draw(self, surface, font):
+	def draw(self, surface: Surface, font: Any) -> None:
 		mouse_pos = pygame.mouse.get_pos()
 		color = (0, 255, 0) if self.rect.collidepoint(mouse_pos) else (255, 0, 0)
 		pygame.draw.rect(surface, color, self.rect, border_radius=8)
@@ -16,14 +18,14 @@ class button:
 		text_rect = text_surf.get_rect(center=self.rect.center)
 		surface.blit(text_surf, text_rect)
 
-	def is_clicked(self, event):
+	def is_clicked(self, event: Any) -> bool:
 		if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
 			if self.rect.collidepoint(event.pos):
 				return True
 		return False
 
 
-def load_map_button(diff, maps_data) -> list:
+def load_map_button(diff, maps_data: dict[str, list]) -> list[button]:
 	map_button = []
 	maps = maps_data[diff]
 	for i, map_name in enumerate(maps):

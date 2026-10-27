@@ -1,3 +1,4 @@
+from typing import Any
 import pygame, sys, time, math
 from Map import GridMap
 from Drones import Drone
@@ -6,7 +7,7 @@ from Scheduler import move_one_turn
 
 
 class DroneSprite(pygame.sprite.Sprite):
-	def __init__(self, image, x, y):
+	def __init__(self, image: Any, x: int, y: int):
 		super().__init__()
 		self.image = image
 		self.rect = self.image.get_rect()
@@ -14,11 +15,11 @@ class DroneSprite(pygame.sprite.Sprite):
 		self.target_x, self.target_y = float(x), float(y)
 		self.rect.center = (int(x), int(y))
 
-	def set_target(self, tx, ty):
+	def set_target(self, tx: int, ty: int) -> None:
 		self.target_x = float(tx)
 		self.target_y = float(ty)
 
-	def update_pos(self, speed):
+	def update_pos(self, speed: float) -> None:
 		dx = self.target_x - self.x
 		dy = self.target_y - self.y
 		distance = math.hypot(dx, dy)
@@ -34,15 +35,15 @@ class Graphic:
 	def __init__(self):
 		self.dronespng = []
 
-	def visual_rep(self, map: GridMap, turn: int, drones: list[Drone]):
+	def visual_rep(self, map: GridMap, turn: int, drones: list[Drone]) -> None:
 		pygame.init()
-		movement = []
+		movement: list = []
 		all_drones = pygame.sprite.Group()
-		drone_sprites = {}
+		drone_sprites: dict = {}
 		size = width, height = 1920, 1000
-		zones = map.get_all_zones()
-		speed = 20.0
-		black = 0, 0, 0
+		zones: list[Zone] = map.get_all_zones()
+		speed: float = 20.0
+		black: tuple = (0, 0, 0)
 		screen = pygame.display.set_mode(size)
 		if zones:
 			min_x = min(z.x for z in zones)

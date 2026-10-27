@@ -3,31 +3,31 @@
 #                                                         :::      ::::::::    #
 #    Scheduler.py                                       :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: diego <diego@student.42.fr>                +#+  +:+       +#+         #
+#    By: dioppolo <dioppolo@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/09/23 13:52:39 by dioppolo          #+#    #+#              #
-#    Updated: 2026/10/26 12:18:10 by diego            ###   ########.fr        #
+#    Updated: 2026/10/27 12:01:31 by dioppolo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 from Drones import Drone
 from Map import GridMap
-from Zones import Zone, End_zone
+from Zones import Zone
 from Connections import Connection
-from typing import Any
 from Algorithm import A_Star
 
 def assign_path_drone(map: GridMap) -> list:
 	zones = map.get_all_zones()
 	Start = map.get_start_zone()
 	End = map.get_end_zone()
-	drones = []
-	for zone in zones:
-		drones += zone.get_drones()
-	for d in drones:
-		path = A_Star(map, Start, End, None)
-		"""MODIFICA LO 0: CON 1: PER NON VEDERE START A TURNO 1"""
-		d.path = path[1:] if path else []
+	drones: list = []
+	if Start and End:
+		for zone in zones:
+			drones += zone.get_drones()
+		for d in drones:
+			path = A_Star(map, Start, End, None)
+			"""MODIFICA LO 0: CON 1: PER NON VEDERE START A TURNO 1"""
+			d.path = path[1:] if path else []
 	return drones
 
 def get_connection(curr_zone: Zone, next_zone: Zone) -> Connection | None:
@@ -62,7 +62,7 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 		candidates.append((drone, curr_zone, next_zone))
 	"""tieni un set di zone che un drone deve evitare
 	quando si cerca un percorso alternativo"""
-	avoided_by_drone = {drone: set() for drone, _, _ in candidates}
+	avoided_by_drone: dict = {drone: set() for drone, _, _ in candidates}
 	blocked = set()
 	"""Doppio ciclo while:
 	WHILE ESTERNO: se una mossa viene rifiutata prova a ricalolare
@@ -75,7 +75,7 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 		accepted = [index not in blocked for index in range(len(candidates))]
 		while True:
 			changed = False
-			connection_requests = {}
+			connection_requests: dict = {}
 			"""PER PRIORITY APPLICARE UN CRITERIO DI PRIORITA' SU CANDIDATES
 				PRIMA DI SELEZIONARE QUALI DRONI RIFIUTARE E QUALI ACCETTARE"""
 			for zone in zones:
@@ -113,7 +113,7 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 				connection_requests.setdefault(conn, []).append(index)
 			for conn, indexes in connection_requests.items():
 				transit_leaving = sum(1 for _, transit_conn, _ in transiting if transit_conn is conn)
-				available = max(0, conn.capacity - len(conn.active_drones) + transit_leaving)
+				available = max(0, int(conn.capacity) - len(conn.active_drones) + transit_leaving)
 				for index in reversed(indexes[available:]):
 					accepted[index] = False
 					changed = True
@@ -129,7 +129,9 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
 		for index in rejected:
 			drone, curr_zone, rejected_zone = candidates[index]
 			avoided_by_drone[drone].add(rejected_zone)
-			new_path = A_Star(map, curr_zone, map.get_end_zone(), avoided_by_drone[drone])
+			end_zone = map.get_end_zone()
+			if end_zone:
+				new_path = A_Star(map, curr_zone, end_zone, avoided_by_drone[drone])
 			if len(new_path) > 1:
 				drone.path = new_path[1:]
 				candidates[index] = (drone, curr_zone, new_path[1])

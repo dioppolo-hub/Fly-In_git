@@ -8,9 +8,9 @@ class GridMap:
 		self.max_x = max_x
 		self.min_y = min_y
 		self.max_y = max_y
-		self.zones = {}
+		self.zones: dict = {}
 
-	def add_zone(self, zone: Zone):
+	def add_zone(self, zone: Zone) -> bool:
 		position = zone.get_zone_pos()
 		if not self.is_inside(position):
 			return False
@@ -19,7 +19,7 @@ class GridMap:
 		self.zones[position] = zone
 		return True
 
-	def is_inside(self, position: tuple):
+	def is_inside(self, position: tuple) -> bool:
 		x, y = position
 		if self.min_y <= x <= self.max_x and self.min_y <= y <= self.max_y:
 			return True
@@ -27,13 +27,10 @@ class GridMap:
 			print("This Zone is outside the Map limit")
 			return False
 
-	def get_zone(self, x: int, y: int):
+	def get_zone(self, x: int, y: int) -> Zone | None:
 		return self.zones.get((x, y))
 
-	def remove_zone(self, x: int, y: int):
-		return self.zones.pop((x, y), None)
-
-	def get_neighbours(self, zone: Zone, allow_diagonals=False):
+	def get_neighbours(self, zone: Zone, allow_diagonals: bool=False) -> list:
 		directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 		if allow_diagonals:
 			directions += [(1, 1), (1, -1), (-1, 1), (-1, -1)]
@@ -44,15 +41,17 @@ class GridMap:
 				neighbours.append(neighbour)
 		return neighbours
 
-	def get_start_zone(self) -> Zone:
+	def get_start_zone(self) -> Zone | None:
 		for zone in self.zones.values():
 			if isinstance(zone, Start_zone):
 				return zone
+		return None
 
-	def get_end_zone(self) -> Zone:
+	def get_end_zone(self) -> Zone | None:
 		for zone in self.zones.values():
 			if isinstance(zone, End_zone):
 				return zone
+		return None
 
 	def get_zone_by_name(self, name: str) -> Zone | None:
 		for zone in self.zones.values():
