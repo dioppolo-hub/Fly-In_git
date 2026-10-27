@@ -116,16 +116,18 @@ class Graphic:
 									dest_x, dest_y = scale_pos(drone.x, drone.y)
 									if drone in drone_sprites:
 										drone_sprites[drone].set_target(dest_x, dest_y)
-						print(f"\n=====(turn: {turn})=====")
-						print(" ".join(movement))
-						if n_drones == len(end.drones):
-							if event.key == pygame.K_ESCAPE:
-								exit(0)
-							else:
-								continue
-						if drones and not movement:
-							print("[ERRORE] - Simulazione Bloccata")
+						if movement:
+							print(f"\n=====(turn: {turn})=====")
+							print(" ".join(movement))
+					if n_drones == len(end.drones):
+						if event.key == pygame.K_ESCAPE:
+							pygame.quit()
 							exit(0)
+						else:
+							continue
+					if drones and not movement:
+						print("[ERRORE] - Simulazione Bloccata")
+						exit(0)
 			for drone_sprite in drone_sprites.values():
 				drone_sprite.update_pos(speed)
 			screen.fill(black)
