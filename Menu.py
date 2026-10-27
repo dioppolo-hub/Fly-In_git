@@ -11,7 +11,7 @@ class button:
 		mouse_pos = pygame.mouse.get_pos()
 		color = (0, 255, 0) if self.rect.collidepoint(mouse_pos) else (255, 0, 0)
 		pygame.draw.rect(surface, color, self.rect, border_radius=8)
-		pygame.draw.rect(surface, (0, 0, 0), self.rect, 2, border_radius=8)
+		pygame.draw.rect(surface, (70, 70, 70), self.rect, 2, border_radius=8)
 		text_surf = font.render(self.text, True, (0, 0, 0))
 		text_rect = text_surf.get_rect(center=self.rect.center)
 		surface.blit(text_surf, text_rect)
@@ -50,10 +50,13 @@ def menu():
 		home_buttons.append(btn)
 	current_state = "HOME"
 	sel_diff = None
-	clock = pygame.time.Clock()
 	while True:
-		screen.fill((255, 255, 255))
+		screen.fill((0, 0, 0))
 		for event in pygame.event.get():
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_ESCAPE:
+					pygame.quit()
+					sys.exit()
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit()
@@ -72,13 +75,13 @@ def menu():
 				if back_btn.is_clicked(event):
 					current_state = "HOME"
 		if current_state == "HOME":
-			title_surf = font.render("SELECT DIFFICULTY", True, (0, 0, 0))
+			title_surf = font.render("SELECT DIFFICULTY", True, (255, 255, 255))
 			screen.blit(title_surf, title_surf.get_rect(center=(width // 2, 80)))
 			for btn in home_buttons:
 				btn.draw(screen, font)
 			pygame.display.flip()
 		elif current_state == "MAP_SELECT":
-			title_surf = font.render(f"{sel_diff.upper()}", True, (0, 0, 0))
+			title_surf = font.render(f"{sel_diff.upper()}", True, (255, 255, 255))
 			screen.blit(title_surf, title_surf.get_rect(center=(width // 2, 80)))
 			for btn in map_button:
 				btn.draw(screen, font)
