@@ -3,76 +3,92 @@ from Drones import Drone
 
 
 class GridMap:
-	def __init__(self, min_x: int, max_x: int, min_y: int, max_y: int):
-		self.min_x = min_x
-		self.max_x = max_x
-		self.min_y = min_y
-		self.max_y = max_y
-		self.zones: dict = {}
+    def __init__(self, min_x: int, max_x: int, min_y: int, max_y: int):
+        self.min_x = min_x
+        self.max_x = max_x
+        self.min_y = min_y
+        self.max_y = max_y
+        self.zones: dict[tuple[int, int], Zone] = {}
 
-	def add_zone(self, zone: Zone) -> bool:
-		position = zone.get_zone_pos()
-		if not self.is_inside(position):
-			return False
-		if position in self.zones:
-			return False
-		self.zones[position] = zone
-		return True
+    def add_zone(self, zone: Zone) -> bool:
+        position = zone.get_zone_pos()
+        if not self.is_inside(position):
+            return False
+        if position in self.zones:
+            return False
+        self.zones[position] = zone
+        return True
 
-	def is_inside(self, position: tuple) -> bool:
-		x, y = position
-		if self.min_y <= x <= self.max_x and self.min_y <= y <= self.max_y:
-			return True
-		else:
-			print("This Zone is outside the Map limit")
-			return False
+    def is_inside(self, position: tuple[int, int]) -> bool:
+        x, y = position
+        if self.min_y <= x <= self.max_x and self.min_y <= y <= self.max_y:
+            return True
+        else:
+            print("This Zone is outside the Map limit")
+            return False
 
-	def get_zone(self, x: int, y: int) -> Zone | None:
-		return self.zones.get((x, y))
+    def get_zone(self, x: int, y: int) -> Zone | None:
+        return self.zones.get((x, y))
 
-	def get_neighbours(self, zone: Zone, allow_diagonals: bool=False) -> list:
-		directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-		if allow_diagonals:
-			directions += [(1, 1), (1, -1), (-1, 1), (-1, -1)]
-		neighbours = []
-		for dx, dy in directions:
-			neighbour = self.get_zone(zone.x + dx, zone.y + dy)
-			if neighbour is not None and not neighbour.is_blocked:
-				neighbours.append(neighbour)
-		return neighbours
+    def get_neighbours(
+            self,
+            zone: Zone,
+            allow_diagonals: bool = False
+            ) -> list[Zone]:
+        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        if allow_diagonals:
+            directions += [(1, 1), (1, -1), (-1, 1), (-1, -1)]
+        neighbours = []
+        for dx, dy in directions:
+            neighbour = self.get_zone(zone.x + dx, zone.y + dy)
+            if neighbour is not None and not neighbour.is_blocked:
+                neighbours.append(neighbour)
+        return neighbours
 
-	def get_start_zone(self) -> Zone | None:
-		for zone in self.zones.values():
-			if isinstance(zone, Start_zone):
-				return zone
-		return None
+    def get_start_zone(self) -> Zone | None:
+        for zone in self.zones.values():
+            if isinstance(zone, Start_zone):
+                return zone
+        return None
 
-	def get_end_zone(self) -> Zone | None:
-		for zone in self.zones.values():
-			if isinstance(zone, End_zone):
-				return zone
-		return None
+    def get_end_zone(self) -> Zone | None:
+        for zone in self.zones.values():
+            if isinstance(zone, End_zone):
+                return zone
+        return None
 
-	def get_zone_by_name(self, name: str) -> Zone | None:
-		for zone in self.zones.values():
-			if zone.name == name:
-				return zone
-		return None
+    def get_zone_by_name(self, name: str) -> Zone | None:
+        for zone in self.zones.values():
+            if zone.name == name:
+                return zone
+        return None
 
-	def get_drone_by_id(self, drone_id: int) -> Drone | None:
-		checked_con = set()
-		for zone in self.zones.values():
-			for drone in zone.drones:
-				if drone.drone_id == drone_id:
-					return drone
-			for conn in zone.connections.values():
-				if conn in checked_con:
-					continue
-				checked_con.add(conn)
-				for drone in conn.active_drones + conn.waiting_drones:
-					if drone.drone_id == drone_id:
-						return drone
-		return None
+    def get_drone_by_id(self, drone_id: int) -> Drone | None:
+        checked_con = set()
+        for zone in self.zones.values():
+            for drone in zone.drones:
+                if drone.drone_id == drone_id:
+                    return drone
+            for conn in zone.connections.values():
+                if conn in checked_con:
+                    continue
+                checked_con.add(conn)
+                for drone in conn.active_drones + conn.waiting_drones:
+                    if isinstance(drone, Drone) and drone.drone_id == drone_id:
+                        return drone
+        return None
 
-	def get_all_zones(self) -> list:
-		return list(self.zones.values())
+    def get_all_zones(self) -> list[Zone]:
+        return list(self.zones.values())
+
+    def end_simulation(self) -> bool:
+        end = self.get_end_zone()
+        for zone in self.zones.values():
+            for drone in zone.drones:
+                if drone.x == end.x and drone.y == end.y:
+                    drone.status = "Arrived"
+        for zone in self.zones.values():
+            for drone in zone.drones:
+                if drone.status != "Arrived":
+                    return False
+        return True
