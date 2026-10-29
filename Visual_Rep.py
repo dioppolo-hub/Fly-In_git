@@ -87,6 +87,7 @@ class Graphic:
                     nx, ny = save_zone_pos[n]
                     lines_data.append(((zx, zy), (nx, ny)))
         font = pygame.font.SysFont("Arial", 20)
+        is_animating = False
         running = True
         while running:
             for event in pygame.event.get():
@@ -94,7 +95,7 @@ class Graphic:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
+                    if event.key == pygame.K_SPACE and not is_animating:
                         movement = move_one_turn(map, drones)
                         turn += 1
                         for m in movement:
@@ -134,12 +135,19 @@ class Graphic:
                     sys.exit(0)
             for drone_sprite in drone_sprites.values():
                 drone_sprite.update_pos(speed)
+            is_animating = any(
+                math.hypot(
+                    sprite.target_x - sprite.x,
+                    sprite.target_y - sprite.y,
+                ) > 0.5
+                for sprite in drone_sprites.values()
+            )
             screen.fill(black)
             for start_point, end_point in lines_data:
                 pygame.draw.line(screen, (70, 70, 70), start_point, end_point)
             for zx, zy, color, name, cost, capacity in zones_data:
                 cap_label = (
-                    f" MAX:{capacity}"
+                    f" MAX:{int(capacity)}"
                     if math.isfinite(float(capacity)) and float(capacity) > 1
                     else ""
                     )
