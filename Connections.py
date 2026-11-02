@@ -16,6 +16,7 @@ class Connection():
         self.active_drones: list[Drone] = []
         zone_a.add_connection(self)
         zone_b.add_connection(self)
+        self.conn_name: str = ""
 
     def get_other_zone(self, zone: Any) -> Any:
         if zone == self.zone_a:

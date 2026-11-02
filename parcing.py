@@ -23,6 +23,14 @@ class MapParser():
         start = 0
         end = 0
         phase = 0
+        col: list[str] = [
+            "black", "blue", "brown",
+            "cyan", "crimson", "darkred",
+            "gold", "green", "lime",
+            "magenta", "maroon", "orange",
+            "purple", "rainbow", "red",
+            "violet", "yellow"
+            ]
         with open(self.name, "r") as f:
             for i, line in enumerate(f, start=1):
                 if line.startswith("nb_drones:"):
@@ -32,9 +40,9 @@ class MapParser():
                             )
                     phase = 1
                     self.n_drones = int(line.split(":")[1])
-                    if self.n_drones == 0:
+                    if self.n_drones <= 0:
                         raise Errors(
-                            f"[ERROR], line {i}, nb_drones cannot be 0"
+                            f"[ERROR], line {i}, nb_drones cannot be 0 or less"
                             )
                 elif line.startswith("start_hub:"):
                     if phase == 0:
@@ -53,7 +61,7 @@ class MapParser():
                             f"[ERROR], line {i}, Too many Start Zones"
                             )
                     self.start_info.append(line.split(":")[1])
-                    self.zones.append(self.parce_start_info(i))
+                    self.zones.append(self.parce_start_info(i, col))
                 elif line.startswith("end_hub:"):
                     if phase == 0:
                         raise Errors(
@@ -69,7 +77,7 @@ class MapParser():
                     if end > 1:
                         raise Errors(f"[ERROR], line {i}, Too many End Zones")
                     self.end_info.append(line.split(":")[1])
-                    self.zones.append(self.parce_end_info(i))
+                    self.zones.append(self.parce_end_info(i, col))
                 elif line.startswith("hub:"):
                     if phase == 0:
                         raise Errors(
@@ -83,7 +91,7 @@ class MapParser():
                             )
                     item = line.split(":")[1]
                     self.zone_info.append(item)
-                    self.zones.append(self.parce_hub_info(item, i))
+                    self.zones.append(self.parce_hub_info(item, i, col))
                 elif line.startswith("connection:"):
                     if phase == 0:
                         raise Errors(
@@ -94,7 +102,6 @@ class MapParser():
                     item = line.split(":")[1].strip()
                     self.conn_info.append(item)
                     self.connections.append(self.parce_conn_info(item, i))
-            self.repetition_zone_name()
             self.check_same_cords_zone()
             map = self.create_map()
         return map
@@ -103,6 +110,7 @@ class MapParser():
         zones_by_names = {}
         connection_data = item.split("[", 1)
         names = connection_data[0].strip().split("-")
+        self.check_dup_conn(names, line)
         if len(names) != 2:
             raise Errors(f"[ERROR], line {line}, Invalid connection")
         for zone in self.zones:
@@ -115,24 +123,43 @@ class MapParser():
                 "to unknown hub"
                 )
         conn = Connection(zone_a, zone_b)
+        conn.conn_name = str(names[0]) + "-" + str(names[1])
         if len(connection_data) > 1:
             extra = connection_data[1].split("]", 1)[0]
             for option in extra.split():
                 if option.startswith("max_link_capacity="):
                     try:
-                        conn.capacity = int(option.split("=", 1)[1])
+                        cap = int(option.split("=", 1)[1])
                     except ValueError:
                         raise Errors(
                             f"[ERROR], line {line},"
                             "Invalid connection capacity"
                             )
+                    if cap <= 0:
+                        raise Errors(
+                            f"[ERROR], line {line}, max_link_capacity"
+                            " must be a positive integer"
+                        )
+                    conn.capacity = cap
+                else:
+                    raise Errors(
+                        f"[ERROR], line {line}, metadata block unknown or "
+                        "syntactically invalid"
+                    )
         return conn
 
-    def parce_hub_info(self, oggetto: str, line: int) -> Zone:
+    def parce_hub_info(
+            self,
+            oggetto: str,
+            line: int,
+            colors:
+            list[str]
+            ) -> Zone:
         items = oggetto.split()
         if len(items) < 3:
             raise Errors(f"[ERROR], line {line}, Invalid hub")
         name = items[0]
+        self.repetition_zone_name(name, line)
         self.zone_name(name, line)
         try:
             x, y = int(items[1]), int(items[2])
@@ -146,9 +173,19 @@ class MapParser():
             for option in extra.split():
                 if option.startswith("color="):
                     color = option.split("=", 1)[1]
+                    if color not in colors:
+                        raise Errors(
+                            f"[ERROR], line {line}, metadata color"
+                            " must be syntactically valid"
+                            )
                     hub.color = color
                 elif option.startswith("max_drones="):
                     cap = option.split("=", 1)[1]
+                    if int(cap) <= 0:
+                        raise Errors(
+                            f"[ERROR], line {line}, Zone capacity"
+                            " must be a positive integer"
+                        )
                     hub.capacity = float(cap)
                 elif option.startswith("zone="):
                     zone_type = option.split("=", 1)[1]
@@ -156,9 +193,19 @@ class MapParser():
                         hub.cost = 2.0
                     elif zone_type == "priority":
                         hub.cost = 0.9
+                    else:
+                        raise Errors(
+                            f"[ERROR], line {line}, metadata zone type"
+                            " must be syntactically correct"
+                        )
+                else:
+                    raise Errors(
+                        f"[ERROR], line {line}, metadata block"
+                        " must be syntactically correct"
+                    )
         return hub
 
-    def parce_start_info(self, line: int) -> Start_zone:
+    def parce_start_info(self, line: int, colors: list[str]) -> Start_zone:
         if not self.start_info:
             raise Errors(f"[ERRORS], line {line}, Missing start hub")
         item = self.start_info[-1].strip()
@@ -179,10 +226,17 @@ class MapParser():
             for i in extra.split():
                 if i.startswith("color="):
                     color = i.split("=", 1)[1]
+                    if color not in colors:
+                        raise Errors(
+                            f"[ERROR], line {line}, metadata color"
+                            " must be syntactically valid"
+                            )
                     start.color = color
+                else:
+                    continue
         return start
 
-    def parce_end_info(self, line: int) -> End_zone:
+    def parce_end_info(self, line: int, colors: list[str]) -> End_zone:
         if not self.end_info:
             raise Errors(f"[ERRORS], line {line}, Missing end hub")
         item = self.end_info[-1].strip()
@@ -203,17 +257,37 @@ class MapParser():
             for i in extra.split():
                 if i.startswith("color="):
                     color = i.split("=", 1)[1]
+                    if color not in colors:
+                        raise Errors(
+                            f"[ERROR], line {line}, metadata color"
+                            " must be syntactically valid"
+                            )
                     end.color = color
         return end
 
-    def repetition_zone_name(self) -> None:
+    def repetition_zone_name(self, name: str, line: int) -> None:
         for z in self.zones:
-            count = 0
-            for i in self.zones:
-                if z.name == i.name:
-                    count += 1
-                    if count > 1:
-                        raise Errors("[ERROR], Multiple Zones with same name")
+            count = 1
+            if z.name == name:
+                count += 1
+            if count > 1:
+                raise Errors(
+                    f"[ERROR], line {line}, "
+                    "Multiple Zones with same name"
+                    )
+
+    def check_dup_conn(self, names: list[str], line: int) -> None:
+        rev_conn_name = str(names[1]) + "-" + str(names[0])
+        conn_name = str(names[0]) + "-" + str(names[1])
+        for conn in self.connections:
+            count = 1
+            if conn.conn_name == conn_name or conn.conn_name == rev_conn_name:
+                count += 1
+            if count > 1:
+                raise Errors(
+                    f"[ERROR], line {line}, "
+                    "Same connection appear more than once"
+                    )
 
     def zone_name(self, name: str, line: int) -> bool:
         if name.find("/") != -1 or name.find(" ") != -1:
