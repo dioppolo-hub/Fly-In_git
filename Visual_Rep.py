@@ -41,6 +41,7 @@ class Graphic:
 
     def visual_rep(self, map: GridMap, turn: int, drones: list[Drone]) -> None:
         pygame.init()
+        n_drones = len(drones)
         movement: list[str] = []
         all_drones = pygame.sprite.Group()
         d_sprites: dict[Any, DroneSprite] = {}
@@ -125,14 +126,19 @@ class Graphic:
                         if movement:
                             print(f"\n=====(turn: {turn})=====")
                             print(" ".join(movement))
+                        if (
+                            turn > 1 and
+                            drones and not
+                            movement and not
+                            map.end_sim(n_drones)
+                        ):
+                            print("[ERRORE] - Simulazione Bloccata")
+                            sys.exit(0)
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         sys.exit(0)
                     else:
                         continue
-                if turn > 1 and drones and not movement and not map.end_sim():
-                    print("[ERRORE] - Simulazione Bloccata")
-                    sys.exit(0)
             for drone_sprite in d_sprites.values():
                 drone_sprite.update_pos(speed)
             is_animating = any(
@@ -140,7 +146,7 @@ class Graphic:
                     sprite.target_x - sprite.x,
                     sprite.target_y - sprite.y,
                 ) > 0.5
-                for sprite in drone_sprites.values()
+                for sprite in d_sprites.values()
             )
             screen.fill(black)
             for start_point, end_point in lines_data:

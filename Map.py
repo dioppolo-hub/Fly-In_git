@@ -81,14 +81,25 @@ class GridMap:
     def get_all_zones(self) -> list[Zone]:
         return list(self.zones.values())
 
-    def end_sim(self) -> bool:
+    def end_sim(self, n_drones: int) -> bool:
         end = self.get_end_zone()
+        count = 0
         for zone in self.zones.values():
             for drone in zone.drones:
                 if end and drone.x == end.x and drone.y == end.y:
                     drone.status = "Arrived"
-        for zone in self.zones.values():
-            for drone in zone.drones:
-                if drone.status != "Arrived":
+                    count += 1
+                else:
                     return False
-        return True
+        for zone in self.zones.values():
+            for conn in zone.connections.values():
+                for drone in conn.active_drones + conn.waiting_drones:
+                    if end and drone.x == end.x and drone.y == end.y:
+                        drone.status = "Arrived"
+                        count += 1
+                    else:
+                        return False
+        if count == n_drones:
+            return True
+        else:
+            return False
