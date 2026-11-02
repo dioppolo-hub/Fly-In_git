@@ -81,11 +81,11 @@ class GridMap:
     def get_all_zones(self) -> list[Zone]:
         return list(self.zones.values())
 
-    def end_simulation(self) -> bool:
+    def end_sim(self) -> bool:
         end = self.get_end_zone()
         for zone in self.zones.values():
             for drone in zone.drones:
-                if drone.x == end.x and drone.y == end.y:
+                if end and drone.x == end.x and drone.y == end.y:
                     drone.status = "Arrived"
         for zone in self.zones.values():
             for drone in zone.drones:

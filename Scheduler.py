@@ -3,13 +3,14 @@ from Map import GridMap
 from Zones import Zone
 from Connections import Connection
 from Algorithm import A_Star
+from typing import Any
 
 
-def assign_path_drone(map: GridMap) -> list:
+def assign_path_drone(map: GridMap) -> list[Drone]:
     zones = map.get_all_zones()
     Start = map.get_start_zone()
     End = map.get_end_zone()
-    drones: list = []
+    drones: list[Drone] = []
     if Start and End:
         for zone in zones:
             drones += zone.get_drones()
@@ -53,7 +54,9 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
         candidates.append((drone, curr_zone, next_zone))
     """tieni un set di zone che un drone deve evitare
     quando si cerca un percorso alternativo"""
-    avoided_by_drone: dict = {drone: set() for drone, _, _ in candidates}
+    avoided_by_drone: dict[Any, set[Zone]] = {
+        drone: set() for drone, _, _ in candidates
+        }
     blocked = set()
     """Doppio ciclo while:
     WHILE ESTERNO: se una mossa viene rifiutata prova a ricalolare
@@ -66,7 +69,7 @@ def move_one_turn(map: GridMap, drones: list[Drone]) -> list[str]:
         accepted = [index not in blocked for index in range(len(candidates))]
         while True:
             changed = False
-            connection_requests: dict = {}
+            connection_requests: dict[Connection, list[int]] = {}
             """PER PRIORITY APPLICARE UN CRITERIO DI PRIORITA' SU CANDIDATES
                 PRIMA DI SELEZIONARE QUALI DRONI RIFIUTARE E QUALI ACCETTARE"""
             for zone in zones:

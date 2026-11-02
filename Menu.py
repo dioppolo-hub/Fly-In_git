@@ -33,7 +33,10 @@ class button:
         return False
 
 
-def load_map_button(diff: str, maps_data: dict[str, list]) -> list[button]:
+def load_map_button(
+        diff: str,
+        maps_data: dict[str, list[str]]
+        ) -> list[button]:
     map_button = []
     maps = maps_data[diff]
     for i, map_name in enumerate(maps):

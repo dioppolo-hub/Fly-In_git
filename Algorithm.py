@@ -1,5 +1,6 @@
 from Map import GridMap
 from Zones import Zone
+from typing import Any
 
 
 def A_Star(
@@ -13,7 +14,7 @@ def A_Star(
     if avoided_zone is None:
         avoided_zone = set()
     open = {Start}
-    path: dict = {}
+    path: dict[Any, Zone] = {}
     g_score = {
             zone: float("inf")
             for zone in map.get_all_zones()
@@ -42,9 +43,9 @@ def A_Star(
     return []
 
 
-def build_path(path: dict, start: Zone, end: Zone) -> list:
+def build_path(path: dict[Any, Zone], start: Zone, end: Zone) -> list[Zone]:
     curr: Zone = end
-    final_path: list = []
+    final_path: list[Zone] = []
     while curr != start:
         final_path.append(curr)
         curr = path[curr]
@@ -53,7 +54,7 @@ def build_path(path: dict, start: Zone, end: Zone) -> list:
     return final_path
 
 
-def find_lowest(open: set, fcost: dict) -> Zone | None:
+def find_lowest(open: set[Zone], fcost: dict[Any, float]) -> Zone | None:
     best_zone: Zone | None = None
     best_f = float('inf')
     for zone in open:

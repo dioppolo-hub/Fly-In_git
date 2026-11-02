@@ -11,12 +11,12 @@ class Errors(Exception):
 class MapParser():
     def __init__(self, name: str):
         self.name = name
-        self.start_info: list = []
-        self.conn_info: list = []
-        self.end_info: list = []
-        self.zone_info: list = []
-        self.zones: list = []
-        self.connections: list = []
+        self.start_info: list[str] = []
+        self.conn_info: list[str] = []
+        self.end_info: list[str] = []
+        self.zone_info: list[str] = []
+        self.zones: list[Zone] = []
+        self.connections: list[Connection] = []
         self.n_drones = 0
 
     def parce_map(self) -> GridMap:

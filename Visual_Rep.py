@@ -18,7 +18,7 @@ class DroneSprite(pygame.sprite.Sprite):
         self.target_x, self.target_y = float(x), float(y)
         self.rect.center = (int(x), int(y))
 
-    def set_target(self, tx: int, ty: int) -> None:
+    def set_target(self, tx: float, ty: float) -> None:
         self.target_x = float(tx)
         self.target_y = float(ty)
 
@@ -41,13 +41,13 @@ class Graphic:
 
     def visual_rep(self, map: GridMap, turn: int, drones: list[Drone]) -> None:
         pygame.init()
-        movement: list = []
+        movement: list[str] = []
         all_drones = pygame.sprite.Group()
-        drone_sprites: dict = {}
+        d_sprites: dict[Any, DroneSprite] = {}
         size = width, height = 1920, 1000
         zones: list[Zone] = map.get_all_zones()
         speed: float = 20.0
-        black: tuple = (0, 0, 0)
+        black: tuple[int, int, int] = (0, 0, 0)
         screen = pygame.display.set_mode(size)
         if zones:
             min_x = min(z.x for z in zones)
@@ -78,7 +78,7 @@ class Graphic:
             dx, dy = scale_pos(d.x, d.y)
             drone = DroneSprite(pygame.image.load("Drone.png"), dx, dy)
             all_drones.add(drone)
-            drone_sprites[d] = drone
+            d_sprites[d] = drone
         for z in zones:
             zx, zy = save_zone_pos[z]
             zones_data.append((zx, zy, z.color, z.name, z.cost, z.capacity))
@@ -106,9 +106,9 @@ class Graphic:
                                 drn = map.get_drone_by_id(d_label)
                                 if zone and drn:
                                     drn.x, drn.y = zone.x, zone.y
-                                    dest_x, dest_y = scale_pos(drn.x, drn.y)
-                                    if drn in drone_sprites:
-                                        drone_sprites[drn].set_target(dest_x, dest_y)
+                                    d_x, d_y = scale_pos(drn.x, drn.y)
+                                    if drn in d_sprites:
+                                        d_sprites[drn].set_target(d_x, d_y)
                             elif z_or_conn == 2:
                                 d_id, zstart, zend = m.split("-")
                                 zs = map.get_zone_by_name(zstart)
@@ -119,8 +119,8 @@ class Graphic:
                                     drn.x = float((zs.x + ze.x) / 2)
                                     drn.y = float((zs.y + ze.y) / 2)
                                     dst_x, dst_y = scale_pos(drn.x, drn.y)
-                                    if drn in drone_sprites:
-                                        drone_sprites[drn].set_target(dst_x, dst_y)
+                                    if drn in d_sprites:
+                                        d_sprites[drn].set_target(dst_x, dst_y)
                         if movement:
                             print(f"\n=====(turn: {turn})=====")
                             print(" ".join(movement))
@@ -129,10 +129,10 @@ class Graphic:
                         sys.exit(0)
                     else:
                         continue
-                if turn > 1 and drones and not movement and not map.end_simulation():
+                if turn > 1 and drones and not movement and not map.end_sim():
                     print("[ERRORE] - Simulazione Bloccata")
                     sys.exit(0)
-            for drone_sprite in drone_sprites.values():
+            for drone_sprite in d_sprites.values():
                 drone_sprite.update_pos(speed)
             screen.fill(black)
             for start_point, end_point in lines_data:
@@ -144,7 +144,7 @@ class Graphic:
                     else ""
                     )
                 if color == "rainbow":
-                    rainbow_colors: list[tuple[int, int, int]] = [
+                    rnb_color: list[tuple[int, int, int]] = [
                         (255, 0, 0),
                         (255, 165, 0),
                         (255, 255, 0),
@@ -153,8 +153,13 @@ class Graphic:
                         (0, 0, 255),
                         (255, 0, 255)
                     ]
-                    for radius, ring_color in zip(range(50, 0, -8), rainbow_colors):
-                        pygame.draw.circle(screen, ring_color, (zx, zy), radius)
+                    for radius, ring_color in zip(range(50, 0, -8), rnb_color):
+                        pygame.draw.circle(
+                            screen,
+                            ring_color,
+                            (zx, zy),
+                            radius
+                            )
                 else:
                     pygame.draw.circle(screen, color, (zx, zy), 50)
                 if int(cost) == 1:
